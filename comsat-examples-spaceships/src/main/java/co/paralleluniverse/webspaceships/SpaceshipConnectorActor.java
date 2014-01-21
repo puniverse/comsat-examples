@@ -31,7 +31,7 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     if (loginName == null)
                         msg.getFrom().send(new HttpResponse(self(), ok(msg, nameFormHtml())));
                     else {
-                        loginName = trim(loginName.replaceAll("[\"\'<>/\\\\]", ""),10);
+                        loginName = trim(loginName.replaceAll("[\"\'<>/\\\\]", ""),10); // protect from js injection attacks
                         if (spaceships.getControlledAmmount().get() / Spaceships.MAX_PLAYERS > 0.9) {
                             msg.getFrom().send(new HttpResponse(self(), ok(msg, noMoreSpaceshipsHtml())));
                         } else {
@@ -93,7 +93,8 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                 + "<form action=\"login\" method=\"post\">\n"
                 + "    <p>Name : <input type=\"text\" name=\"name\" value=\"myName\" /></p>\n"
                 + "    <input type=\"submit\" value=\"Start Playing\" />\n"
-                + "</form>\n</html>";
+                + "</form>\n"
+                + "Left/Right: turn; up/down: accelarate/decelerate; space: shoot</html>";
     }
 
     String noMoreSpaceshipsHtml() {
