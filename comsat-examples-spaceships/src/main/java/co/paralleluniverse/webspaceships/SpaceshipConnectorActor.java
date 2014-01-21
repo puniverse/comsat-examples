@@ -88,16 +88,16 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
     }
 
     String nameFormHtml() {
-        return "<h1>Parallel Universe Spaceships webactors demo</h1>\n"
+        return "<html><h1>Parallel Universe Spaceships webactors demo</h1>\n"
                 + "<h3>Please enter your name:</h3>"
                 + "<form action=\"login\" method=\"post\">\n"
                 + "    <p>Name : <input type=\"text\" name=\"name\" value=\"myName\" /></p>\n"
                 + "    <input type=\"submit\" value=\"Start Playing\" />\n"
-                + "</form>\n";
+                + "</form>\n</html>";
     }
 
     String noMoreSpaceshipsHtml() {
-        return "<h1>Sorry. No free spaceship. Please try again later</h1>\n";
+        return "<html><h1>Sorry. No free spaceship. Please try again later</h1>\n</html>";
     }
 
     String gameHtml() {
