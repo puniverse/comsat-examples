@@ -24,7 +24,7 @@ task deployToTomcat(type: Copy) {
     from project(":comsat-examples-jaxrs").war
     
     // To run Spaceships:
-    from project(":comsat-examples-spaceships").war
+//    from project(":comsat-examples-spaceships").war
     
     from 'src/main/webapp'
     into webappDir
