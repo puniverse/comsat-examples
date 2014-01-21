@@ -32,6 +32,7 @@ import co.paralleluniverse.spacebase.AABB;
 import co.paralleluniverse.spacebase.quasar.SpaceBase;
 import co.paralleluniverse.spacebase.quasar.SpaceBaseBuilder;
 import co.paralleluniverse.strands.concurrent.Phaser;
+import com.codahale.metrics.Counter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -60,7 +61,9 @@ public class Spaceships {
     private Supervisor supervisor;
     private AtomicInteger controlledAmmount = new AtomicInteger();
     public final int players;
+    private final static Counter counterMetric = Metrics.counter("players");
 
+    
     public Spaceships(Properties props) throws Exception {
         if (props.getProperty("parallelism") != null)
             System.setProperty("co.paralleluniverse.fibers.DefaultFiberPool.parallelism", props.getProperty("parallelism"));
@@ -103,7 +106,7 @@ public class Spaceships {
             for (File file : metricsDir.listFiles())
                 file.delete();
         }
-        metricsDir.mkdir();
+        metricsDir.mkdirs();
 
         final File configFile = new File(metricsDir, "config.txt");
         this.configStream = new PrintStream(new FileOutputStream(configFile), true);
@@ -181,13 +184,14 @@ public class Spaceships {
             controlledAmmount.decrementAndGet();
             return null;
         }
-        System.out.println("KKKKKKK spawn num "+controlledAmmount);
+        counterMetric.inc();
         final Spaceship spaceship = new Spaceship(this, N + 1, phaser, controller);
         spaceship.setName(name);
         return spaceship.spawn();
     }
+
     public void notifyControlledSpaceshipDied() {
-        System.out.println("KKKKKKK died num "+controlledAmmount);
+        counterMetric.dec();
         controlledAmmount.decrementAndGet();
     }
 
@@ -199,7 +203,6 @@ public class Spaceships {
         return controlledAmmount;
     }
 
-    
     public void mrun() throws Exception {
         Thread.sleep(5000); // wait for things to optimize a bit.
 
@@ -219,6 +222,8 @@ public class Spaceships {
 
                 double fps = frames / seconds;
                 System.out.println(k + "\tRATE: " + fps + " fps");
+                if (timeStream != null)
+                    timeStream.println(k + "," + fps);
 
                 prevTime = now;
             }

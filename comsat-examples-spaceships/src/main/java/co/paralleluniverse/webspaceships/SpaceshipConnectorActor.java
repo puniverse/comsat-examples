@@ -4,6 +4,7 @@ import co.paralleluniverse.actors.ActorRef;
 import co.paralleluniverse.actors.BasicActor;
 import co.paralleluniverse.actors.ExitMessage;
 import co.paralleluniverse.actors.LifecycleMessage;
+import co.paralleluniverse.common.monitoring.Metrics;
 import co.paralleluniverse.comsat.webactors.HttpRequest;
 import co.paralleluniverse.comsat.webactors.HttpResponse;
 import static co.paralleluniverse.comsat.webactors.HttpResponse.ok;
@@ -11,11 +12,14 @@ import co.paralleluniverse.comsat.webactors.WebActor;
 import co.paralleluniverse.comsat.webactors.WebDataMessage;
 import co.paralleluniverse.comsat.webactors.WebSocketOpened;
 import co.paralleluniverse.fibers.SuspendExecution;
-import co.paralleluniverse.spaceships.Spaceships;
 import static co.paralleluniverse.spaceships.Spaceships.spaceships;
+import com.codahale.metrics.Meter;
 
 @WebActor(httpUrlPatterns = "/login", webSocketUrlPatterns = "/game")
 public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
+    private static final Meter rcvMetric = Metrics.meter("msgsRecieved");
+    private static final Meter openMetric = Metrics.meter("openWsRecieved");
+    private static final Meter httpMetric = Metrics.meter("httpRecieved");
     private ActorRef<Object> spaceship = null;
 
     @Override
@@ -26,6 +30,7 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
             for (;;) {
                 Object message = receive();
                 if (message instanceof HttpRequest) {
+                    httpMetric.mark();
                     HttpRequest msg = (HttpRequest) message;
                     loginName = msg.getParameter("name");
                     if (loginName == null)
@@ -39,10 +44,12 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                         }
                     }
                 } else if (message instanceof WebSocketOpened) {
+                    openMetric.mark();
                     WebSocketOpened msg = (WebSocketOpened) message;
                     client = msg.getFrom();
                     watch(client);
                 } else if (message instanceof WebDataMessage) {
+                    rcvMetric.mark();
                     WebDataMessage msg = (WebDataMessage) message;
                     if (spaceship == null) { // 
                         spaceship = spaceships.spawnControlledSpaceship(client, "c." + loginName);
