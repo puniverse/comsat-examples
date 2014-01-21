@@ -23,11 +23,14 @@ public class EmbeddedTomcat extends Tomcat {
 
         tomcat.start();
         try {
-            while (true)
+            // block forever for service mode
+            while (args.length>0)
                 Thread.sleep(3600000);
         } catch (InterruptedException e) {
-            tomcat.stop();
         }
+        System.out.println("Hit enter to exit...");
+        System.in.read();
+        tomcat.stop();
     }
 
     private static void registerDB(EmbeddedTomcat tomcat) throws SQLException {
