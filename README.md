@@ -30,19 +30,17 @@ Then, in a web browser, access any of the following links:
 
 1. Build the upgrade module:
 
-```sh
-./gradle :comsat-examples-webactors-codeswap:jar
-```
+   ```sh
+   ./gradle :comsat-examples-webactors-codeswap:jar
+   ```
 
 2. Run and access [http://localhost:8080/comsat-examples-webactors/webactor](http://localhost:8080/comsat-examples-webactors/webactor) as explained above. 
 
 3. Copy the upgrade module jar file into the `modules/` direcotory:
 
-```sh
-cp comsat-examples-webactors-codeswap/build/libs/comsat-examples-webactors-codeswap.jar modules
-```
-
-4. Open [http://localhost:8080/comsat-examples-spaceships/login](http://localhost:8080/comsat-examples-spaceships/login) in your browser.
+   ```sh
+   cp comsat-examples-webactors-codeswap/build/libs/comsat-examples-webactors-codeswap.jar modules
+   ```
 
 ## Running Spaceships
 
@@ -51,6 +49,8 @@ Uncomment the following line in `embedded-tomcat/build.gradle`:
 ```
 from project(":comsat-examples-spaceships").war
 ```
+
+Then, open [http://localhost:8080/comsat-examples-spaceships/login](http://localhost:8080/comsat-examples-spaceships/login) in your browser.
 
 ## License
 
