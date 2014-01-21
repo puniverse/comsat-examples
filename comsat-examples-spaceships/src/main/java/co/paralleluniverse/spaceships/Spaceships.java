@@ -44,7 +44,6 @@ import jsr166e.LongAdder;
 public class Spaceships {
     public static Spaceships spaceships;
     public static final int POSTPONE_GLPORT_UNTIL_SB_CYCLE_UNDER_X_MILLIS = 250;
-    public static final int MAX_PLAYERS = 100;
     public final SpaceBase<Record<SpaceshipState>> sb;
     public final RandSpatial random;
     private final int N;
@@ -60,6 +59,7 @@ public class Spaceships {
     private long cycleStart;
     private Supervisor supervisor;
     private AtomicInteger controlledAmmount = new AtomicInteger();
+    public final int players;
 
     public Spaceships(Properties props) throws Exception {
         if (props.getProperty("parallelism") != null)
@@ -68,6 +68,7 @@ public class Spaceships {
         double b = Double.parseDouble(props.getProperty("world-length", "20000"));
         this.bounds = AABB.create(-b / 2, b / 2, -b / 2 * 0.7, b / 2 * 0.7, -b / 2, b / 2);
         this.N = Integer.parseInt(props.getProperty("N", "10000"));
+        this.players = Integer.parseInt(props.getProperty("players", "500"));
         this.speedVariance = Double.parseDouble(props.getProperty("speed-variance", "1"));
         this.range = Double.parseDouble(props.getProperty("radar-range", "10"));
         this.extrapolate = Boolean.parseBoolean(props.getProperty("extrapolate", "true"));
@@ -176,7 +177,7 @@ public class Spaceships {
     }
 
     public ActorRef<Object> spawnControlledSpaceship(ActorRef<WebDataMessage> controller, String name) {
-        if (controlledAmmount.incrementAndGet()>MAX_PLAYERS) {
+        if (controlledAmmount.incrementAndGet() > players) {
             controlledAmmount.decrementAndGet();
             return null;
         }
