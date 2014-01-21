@@ -1,0 +1,41 @@
+dependencies {
+    compile 'org.apache.tomcat.embed:tomcat-embed-core:8.0.0-RC5'
+    compile 'org.apache.tomcat.embed:tomcat-embed-jasper:8.0.0-RC5'
+    runtime 'org.apache.tomcat.embed:tomcat-embed-logging-log4j:8.0.0-RC5'
+    compile 'org.apache.tomcat:tomcat-websocket:8.0.0-RC5'
+    runtime 'co.paralleluniverse:comsat-tomcat-loader:0.1.0-SNAPSHOT' // <---------------------------
+    runtime 'co.paralleluniverse:comsat-jdbc:0.1.0-SNAPSHOT' // <--- ???
+    compile 'org.apache.derby:derby:10.10.1.1'        
+    runtime 'org.apache.tomcat:tomcat-dbcp:8.0.0-RC5'
+}
+
+task deployToTomcat(type: Copy) {
+    ext.set("webappDir",new File('build/webapp'))
+    doFirst {
+        ext.set("webappDir",new File('build/webapp'))
+        delete(webappDir)
+        webappDir.mkdirs()     
+    }
+    
+    // To run the WAR examples:
+    from project(":test-servlet").war
+    from project(":comsat-examples-servlet").war
+    from project(":comsat-examples-webactors").war
+    from project(":comsat-examples-jaxrs").war
+    
+    // To run Spaceships:
+    from project(":comsat-examples-spaceships").war
+    
+    from 'src/main/webapp'
+    into webappDir
+}
+
+run {
+    dependsOn classes, deployToTomcat
+    main = 'example.tomcat.EmbeddedTomcat'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    jvmArgs "-ea"
+    systemProperty "co.paralleluniverse.actors.moduleDir", "${rootProject.projectDir}/modules"
+    // systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', 'true'
+}

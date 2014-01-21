@@ -1,0 +1,34 @@
+configurations {
+    quasar
+}
+
+dependencies {
+    
+}
+
+dependencies {
+    compile 'co.paralleluniverse:quasar-core:0.4.0-SNAPSHOT'
+    compile 'co.paralleluniverse:comsat-servlet:0.1.0-SNAPSHOT'
+    compile 'co.paralleluniverse:comsat-jdbc:0.1.0-SNAPSHOT'
+    
+    compile 'org.eclipse.jetty:jetty-servlet:9.1.0.RC0'
+    compile 'org.eclipse.jetty:jetty-server:9.1.0.RC0'
+    compile 'org.eclipse.jetty.websocket:websocket-server:9.1.0.RC0'
+    compile 'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.1.0.RC0'
+    compile 'org.apache.derby:derby:10.10.1.1'
+
+    compile project(':test-servlet')
+    compile project(':comsat-examples-servlet')
+    
+    quasar  'co.paralleluniverse:quasar-core:0.4.0-SNAPSHOT'
+}
+
+run {
+    main = 'co.paralleluniverse.examples.comsatjetty.SimpleFiberServlets'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    
+    jvmArgs "-javaagent:${configurations.quasar.iterator().next()}" // =v, =d
+    jvmArgs "-ea"
+    // systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', 'true'
+}

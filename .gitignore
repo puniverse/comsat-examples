@@ -1,0 +1,15 @@
+/dist/
+/out/
+private/
+_site/
+.idea/
+*.iml
+/artifacts
+/nbproject/private/
+/.nb-gradle
+.nb-gradle-properties
+build/
+.DS_Store
+.gradle/
+.bdb/
+derby.log

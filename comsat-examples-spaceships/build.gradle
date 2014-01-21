@@ -1,0 +1,56 @@
+apply plugin: 'war' 
+repositories {
+    flatDir { dirs 'baselib' }
+    mavenLocal()
+    mavenCentral()
+    //        maven { url "https://oss.sonatype.org/content/repositories/releases" }
+    //        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    //        maven { url "http://download.oracle.com/maven/" }
+}
+configurations {
+    proprietary
+}
+
+dependencies {
+    proprietary "co.paralleluniverse:spacebase-core:2.1-SNAPSHOT"
+    compile 'co.paralleluniverse:comsat-actors-servlet:0.1.0-SNAPSHOT'
+    compile ":spacebase-core:2.1-SNAPSHOT"
+    runtime "net.sf.trove4j:trove4j:3.0.2"        
+
+} 
+
+task copyProprietary(type: Sync) {
+    from { configurations.proprietary }
+    into { "${project.projectDir}/baselib" }
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs '-server'
+    // jvmArgs "-javaagent:${configurations.quasar.iterator().next()}" // =vdmc (verbose, debug, allow monitors, check class)
+    // systemProperty "co.paralleluniverse.fibers.DefaultFiberPool.parallelism", "4"
+    systemProperty "co.paralleluniverse.fibers.DefaultFiberPool.monitor", "JMX" // "METRICS" // "NONE" //
+
+    // memory
+    jvmArgs '-Xmx1024m'
+    jvmArgs '-XX:+UseParallelGC'
+    jvmArgs '-XX:+UseCondCardMark'
+    // jvmArgs '-XX:+UseG1GC', '-XX:MaxGCPauseMillis=50'
+
+    // profiling
+    // jvmArgs '-XX:+UnlockCommercialFeatures', '-XX:+FlightRecorder'
+    // jvmArgs '-verbose:gc'
+    // jvmArgs '-XX:+UnlockDiagnosticVMOptions', '-XX:+TraceClassLoading', '-XX:+LogCompilation' // use with jitwatch
+    // jvmArgs '-XX:+UnlockDiagnosticVMOptions', '-XX:+PrintInlining'
+
+
+    // logging
+    systemProperty "log4j.configurationFile", "${rootProject.projectDir}/log4j.xml"
+    // systemProperty "Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+
+    // debugging
+    // jvmArgs '-ea'
+    // systemProperty "co.paralleluniverse.debugMode", "true"
+    systemProperty "co.paralleluniverse.globalFlightRecorder", "true"
+    systemProperty "co.paralleluniverse.flightRecorderDumpFile", "spaceships.log"
+    systemProperty "co.paralleluniverse.monitoring.flightRecorderSize","100000" 
+}
