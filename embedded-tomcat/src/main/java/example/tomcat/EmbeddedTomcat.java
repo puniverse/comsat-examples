@@ -22,10 +22,12 @@ public class EmbeddedTomcat extends Tomcat {
         registerDB(tomcat);
 
         tomcat.start();
-        System.out.println("Webserver started. Hit Enter to stop...");
-        System.in.read();
-        System.out.println("Shutdown requested. Stopping.");
-        tomcat.stop();
+        try {
+            while (true)
+                Thread.sleep(3600000);
+        } catch (InterruptedException e) {
+            tomcat.stop();
+        }
     }
 
     private static void registerDB(EmbeddedTomcat tomcat) throws SQLException {
