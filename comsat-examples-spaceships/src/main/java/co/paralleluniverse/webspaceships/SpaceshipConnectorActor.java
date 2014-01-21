@@ -31,6 +31,7 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     if (loginName == null)
                         msg.getFrom().send(new HttpResponse(self(), ok(msg, nameFormHtml())));
                     else {
+                        loginName = trim(loginName.replaceAll("[\"\'<>/\\\\]", ""),10);
                         if (spaceships.getControlledAmmount().get() / Spaceships.MAX_PLAYERS > 0.9) {
                             msg.getFrom().send(new HttpResponse(self(), ok(msg, noMoreSpaceshipsHtml())));
                         } else {
@@ -126,5 +127,9 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
     }
 
     void verifySpaceshipNotDead(ActorRef<Object> spaceship) throws InterruptedException, SuspendExecution {
+    }
+
+    private String trim(String s, int len) {
+        return s.substring(0, Math.min(len, s.length()));
     }
 }
