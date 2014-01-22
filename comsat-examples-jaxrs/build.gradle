@@ -1,7 +1,7 @@
 apply plugin: 'war' 
 
 dependencies {
-    compile 'co.paralleluniverse:comsat-jersey-server:0.1.0-SNAPSHOT'
-    compile 'co.paralleluniverse:comsat-jax-rs-client:0.1.0-SNAPSHOT'
-    runtime 'co.paralleluniverse:comsat-jdbc:0.1.0-SNAPSHOT'
+    compile 'co.paralleluniverse:comsat-jersey-server:0.1.0'
+    compile 'co.paralleluniverse:comsat-jax-rs-client:0.1.0'
+    runtime 'co.paralleluniverse:comsat-jdbc:0.1.0'
 }

@@ -3,8 +3,8 @@ dependencies {
     compile 'org.apache.tomcat.embed:tomcat-embed-jasper:8.0.0-RC5'
     runtime 'org.apache.tomcat.embed:tomcat-embed-logging-log4j:8.0.0-RC5'
     compile 'org.apache.tomcat:tomcat-websocket:8.0.0-RC5'
-    runtime 'co.paralleluniverse:comsat-tomcat-loader:0.1.0-SNAPSHOT' // <---------------------------
-    runtime 'co.paralleluniverse:comsat-jdbc:0.1.0-SNAPSHOT' // <--- ???
+    runtime 'co.paralleluniverse:comsat-tomcat-loader:0.1.0' // <---------------------------
+    runtime 'co.paralleluniverse:comsat-jdbc:0.1.0' // <--- ???
     compile 'org.apache.derby:derby:10.10.1.1'        
     runtime 'org.apache.tomcat:tomcat-dbcp:8.0.0-RC5'
 }
@@ -24,7 +24,7 @@ task deployToTomcat(type: Copy) {
     from project(":comsat-examples-jaxrs").war
     
     // To run Spaceships:
-    from project(":comsat-examples-spaceships").war
+    // from project(":comsat-examples-spaceships").war
     
     from 'src/main/webapp'
     into webappDir
