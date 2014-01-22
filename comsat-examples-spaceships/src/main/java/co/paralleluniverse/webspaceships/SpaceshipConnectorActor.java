@@ -4,6 +4,7 @@ import co.paralleluniverse.actors.ActorRef;
 import co.paralleluniverse.actors.BasicActor;
 import co.paralleluniverse.actors.ExitMessage;
 import co.paralleluniverse.actors.LifecycleMessage;
+import co.paralleluniverse.common.monitoring.Metrics;
 import co.paralleluniverse.comsat.webactors.HttpRequest;
 import co.paralleluniverse.comsat.webactors.HttpResponse;
 import static co.paralleluniverse.comsat.webactors.HttpResponse.ok;
@@ -11,11 +12,14 @@ import co.paralleluniverse.comsat.webactors.WebActor;
 import co.paralleluniverse.comsat.webactors.WebDataMessage;
 import co.paralleluniverse.comsat.webactors.WebSocketOpened;
 import co.paralleluniverse.fibers.SuspendExecution;
-import co.paralleluniverse.spaceships.Spaceships;
 import static co.paralleluniverse.spaceships.Spaceships.spaceships;
+import com.codahale.metrics.Meter;
 
 @WebActor(httpUrlPatterns = "/login", webSocketUrlPatterns = "/game")
 public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
+    private static final Meter rcvMetric = Metrics.meter("msgsRecieved");
+    private static final Meter openMetric = Metrics.meter("openWsRecieved");
+    private static final Meter httpMetric = Metrics.meter("httpRecieved");
     private ActorRef<Object> spaceship = null;
 
     @Override
@@ -26,22 +30,26 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
             for (;;) {
                 Object message = receive();
                 if (message instanceof HttpRequest) {
+                    httpMetric.mark();
                     HttpRequest msg = (HttpRequest) message;
                     loginName = msg.getParameter("name");
                     if (loginName == null)
                         msg.getFrom().send(new HttpResponse(self(), ok(msg, nameFormHtml())));
                     else {
-                        if (spaceships.getControlledAmmount().get() / Spaceships.MAX_PLAYERS > 0.9) {
+                        loginName = trim(loginName.replaceAll("[\"\'<>/\\\\]", ""),10); // protect from js injection attacks
+                        if (spaceships.getControlledAmmount().get() / spaceships.players > 0.9) {
                             msg.getFrom().send(new HttpResponse(self(), ok(msg, noMoreSpaceshipsHtml())));
                         } else {
                             msg.getFrom().send(new HttpResponse(self(), ok(msg, gameHtml())));
                         }
                     }
                 } else if (message instanceof WebSocketOpened) {
+                    openMetric.mark();
                     WebSocketOpened msg = (WebSocketOpened) message;
                     client = msg.getFrom();
                     watch(client);
                 } else if (message instanceof WebDataMessage) {
+                    rcvMetric.mark();
                     WebDataMessage msg = (WebDataMessage) message;
                     if (spaceship == null) { // 
                         spaceship = spaceships.spawnControlledSpaceship(client, "c." + loginName);
@@ -87,16 +95,17 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
     }
 
     String nameFormHtml() {
-        return "<h1>Parallel Universe Spaceships webactors demo</h1>\n"
+        return "<html><h1>Parallel Universe Spaceships webactors demo</h1>\n"
                 + "<h3>Please enter your name:</h3>"
                 + "<form action=\"login\" method=\"post\">\n"
                 + "    <p>Name : <input type=\"text\" name=\"name\" value=\"myName\" /></p>\n"
                 + "    <input type=\"submit\" value=\"Start Playing\" />\n"
-                + "</form>\n";
+                + "</form>\n"
+                + "Left/Right: turn; up/down: accelarate/decelerate; space: shoot</html>";
     }
 
     String noMoreSpaceshipsHtml() {
-        return "<h1>Sorry. No free spaceship. Please try again later</h1>\n";
+        return "<html><h1>Sorry. No free spaceship. Please try again later</h1>\n</html>";
     }
 
     String gameHtml() {
@@ -126,5 +135,9 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
     }
 
     void verifySpaceshipNotDead(ActorRef<Object> spaceship) throws InterruptedException, SuspendExecution {
+    }
+
+    private String trim(String s, int len) {
+        return s.substring(0, Math.min(len, s.length()));
     }
 }

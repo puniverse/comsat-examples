@@ -191,7 +191,6 @@ public class Spaceship extends BasicActor<Object, Void> {
                         } else {
                             switch (dataString) {
                                 case "subscribe":
-                                    System.out.println("no need this way");
                                     break;
                                 case "fire":
                                     tryShoot();
@@ -210,7 +209,7 @@ public class Spaceship extends BasicActor<Object, Void> {
                                     break;
                                 case "exit":
                                     blow(now);
-                                    break;                                    
+                                    break;
                             }
                             sendToController(now, true);
                         }

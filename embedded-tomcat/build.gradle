@@ -34,6 +34,7 @@ run {
     dependsOn classes, deployToTomcat
     main = 'example.tomcat.EmbeddedTomcat'
     classpath = sourceSets.main.runtimeClasspath
+    if (project.hasProperty('service')) {args('service=true')}
     standardInput = System.in
     jvmArgs "-ea"
     systemProperty "co.paralleluniverse.actors.moduleDir", "${rootProject.projectDir}/modules"

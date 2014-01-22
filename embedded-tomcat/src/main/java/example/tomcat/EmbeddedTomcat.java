@@ -22,9 +22,14 @@ public class EmbeddedTomcat extends Tomcat {
         registerDB(tomcat);
 
         tomcat.start();
-        System.out.println("Webserver started. Hit Enter to stop...");
+        try {
+            // block forever for service mode
+            while (args.length > 0)
+                Thread.sleep(3600000);
+        } catch (InterruptedException e) {
+        }
+        System.out.println("Hit enter to exit...");
         System.in.read();
-        System.out.println("Shutdown requested. Stopping.");
         tomcat.stop();
     }
 

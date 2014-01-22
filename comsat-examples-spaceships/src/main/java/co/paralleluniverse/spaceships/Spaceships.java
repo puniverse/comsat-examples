@@ -32,6 +32,7 @@ import co.paralleluniverse.spacebase.AABB;
 import co.paralleluniverse.spacebase.quasar.SpaceBase;
 import co.paralleluniverse.spacebase.quasar.SpaceBaseBuilder;
 import co.paralleluniverse.strands.concurrent.Phaser;
+import com.codahale.metrics.Counter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -44,7 +45,6 @@ import jsr166e.LongAdder;
 public class Spaceships {
     public static Spaceships spaceships;
     public static final int POSTPONE_GLPORT_UNTIL_SB_CYCLE_UNDER_X_MILLIS = 250;
-    public static final int MAX_PLAYERS = 100;
     public final SpaceBase<Record<SpaceshipState>> sb;
     public final RandSpatial random;
     private final int N;
@@ -60,6 +60,8 @@ public class Spaceships {
     private long cycleStart;
     private Supervisor supervisor;
     private AtomicInteger controlledAmmount = new AtomicInteger();
+    public final int players;
+    private final static Counter counterMetric = Metrics.counter("players");
 
     public Spaceships(Properties props) throws Exception {
         if (props.getProperty("parallelism") != null)
@@ -68,6 +70,7 @@ public class Spaceships {
         double b = Double.parseDouble(props.getProperty("world-length", "20000"));
         this.bounds = AABB.create(-b / 2, b / 2, -b / 2 * 0.7, b / 2 * 0.7, -b / 2, b / 2);
         this.N = Integer.parseInt(props.getProperty("N", "10000"));
+        this.players = Integer.parseInt(props.getProperty("players", "500"));
         this.speedVariance = Double.parseDouble(props.getProperty("speed-variance", "1"));
         this.range = Double.parseDouble(props.getProperty("radar-range", "10"));
         this.extrapolate = Boolean.parseBoolean(props.getProperty("extrapolate", "true"));
@@ -102,7 +105,7 @@ public class Spaceships {
             for (File file : metricsDir.listFiles())
                 file.delete();
         }
-        metricsDir.mkdir();
+        metricsDir.mkdirs();
 
         final File configFile = new File(metricsDir, "config.txt");
         this.configStream = new PrintStream(new FileOutputStream(configFile), true);
@@ -176,17 +179,18 @@ public class Spaceships {
     }
 
     public ActorRef<Object> spawnControlledSpaceship(ActorRef<WebDataMessage> controller, String name) {
-        if (controlledAmmount.incrementAndGet()>MAX_PLAYERS) {
+        if (controlledAmmount.incrementAndGet() > players) {
             controlledAmmount.decrementAndGet();
             return null;
         }
-        System.out.println("KKKKKKK spawn num "+controlledAmmount);
+        counterMetric.inc();
         final Spaceship spaceship = new Spaceship(this, N + 1, phaser, controller);
         spaceship.setName(name);
         return spaceship.spawn();
     }
+
     public void notifyControlledSpaceshipDied() {
-        System.out.println("KKKKKKK died num "+controlledAmmount);
+        counterMetric.dec();
         controlledAmmount.decrementAndGet();
     }
 
@@ -198,7 +202,6 @@ public class Spaceships {
         return controlledAmmount;
     }
 
-    
     public void mrun() throws Exception {
         Thread.sleep(5000); // wait for things to optimize a bit.
 
@@ -218,6 +221,8 @@ public class Spaceships {
 
                 double fps = frames / seconds;
                 System.out.println(k + "\tRATE: " + fps + " fps");
+                if (timeStream != null)
+                    timeStream.println(k + "," + fps);
 
                 prevTime = now;
             }
