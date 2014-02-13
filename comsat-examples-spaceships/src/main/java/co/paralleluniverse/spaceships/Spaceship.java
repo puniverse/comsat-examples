@@ -84,6 +84,8 @@ public class Spaceship extends BasicActor<Object, Void> {
     private SpatialToken lockedOn;
     private double chaseAx;
     private double chaseAy;
+    private double ax;
+    private double ay;
     private double exVx = 0;
     private double exVy = 0;
     private int timesHit = 0;
@@ -363,24 +365,20 @@ public class Spaceship extends BasicActor<Object, Void> {
 
     private void applyNeighborRejectionAndMove(final long now) throws InterruptedException, SuspendExecution {
         AABB myAABB = getAABB();
-        try (ResultSet<Record<SpaceshipState>> rs = global.sb.queryForUpdate(
-                SpatialQueries.range(myAABB, global.range),
-                SpatialQueries.equals((Record<SpaceshipState>) state, myAABB), false)) {
 
+        try (ResultSet<Record<SpaceshipState>> rs = global.sb.query(SpatialQueries.range(myAABB, global.range))) {
             applyNeighborRejection(rs.getResultReadOnly(), now);
-
-            assert rs.getResultForUpdate().size() <= 1;
-            for (ElementUpdater<Record<SpaceshipState>> updater : rs.getResultForUpdate()) {
-                // this is me
-                assert updater.elem().equals(state);
-
-                move(now);
-                state.set($status, status);
-                state.set($timeFired, timeFired);
-                state.set($shotLength, shotLength);
-                state.set($exVelocityUpdated, exVelocityUpdated);
-                updater.update(getAABB());
-            }
+        }
+        try (ElementUpdater1<Record<SpaceshipState>> updater = global.sb.update(state.get($token))) {
+            state.set($ax, ax);
+            state.set($ay, ay);
+            
+            move(now);
+            state.set($status, status);
+            state.set($timeFired, timeFired);
+            state.set($shotLength, shotLength);
+            state.set($exVelocityUpdated, exVelocityUpdated);
+            updater.update(getAABB());
         }
         reduceExternalVelocity(now);
     }
@@ -389,8 +387,8 @@ public class Spaceship extends BasicActor<Object, Void> {
     private void applyNeighborRejection(Set<Record<SpaceshipState>> neighbors, long currentTime) {
         final int n = neighbors.size();
 
-        state.set($ax, chaseAx);
-        state.set($ay, chaseAy);
+        this.ax = chaseAx;
+        this.ay = chaseAy;
 
         if (n > 1) {
             for (Record<SpaceshipState> s : neighbors) {
@@ -410,10 +408,10 @@ public class Spaceship extends BasicActor<Object, Void> {
 
                 double rejection = min(REJECTION_COEFF / (d * d), 250);
 
-                state.set($ax, state.get($ax) - rejection * udx);
-                state.set($ay, state.get($ay) - rejection * udy);
+                this.ax = ax - rejection * udx;
+                this.ay = ay - rejection * udy;
 
-                if (Double.isNaN(state.get($ax) + state.get($ay)))
+                if (Double.isNaN(ax + ay))
                     assert false;
             }
         }
@@ -695,14 +693,13 @@ public class Spaceship extends BasicActor<Object, Void> {
         return command != null ? command.time : Long.MAX_VALUE;
     }
 
-            exVx /= (1 + 8 * dext);
-            exVy /= (1 + 8 * dext);
     void sendUpdateToClient(final long now, boolean forceSend) throws InterruptedException, SuspendExecution {
         if (controller != null && status == Status.ALIVE && (forceSend || (now - lastSent > 100))) {
             this.lastSent = now;
             final String jsonMessage = getJsonMessage(now);
 //                        timesHit = 0;
 //                        System.out.println("sending: " + jsonMessage);
+            controller.send(new WebDataMessage(ref(), jsonMessage));
         }
 //                        sender.send(new WebSocketMessage("{th: " + timesHit + ". pos: (" + state.x + "," + state.y + "), n: [" + getSightRange() + "]}"));
     }
@@ -713,6 +710,7 @@ public class Spaceship extends BasicActor<Object, Void> {
         return "{"
                 + "now:" + now + ","
                 + "life:" + (TIMES_HIT_TO_BLOW - timesHit) + ","
+                + "self:" + getSingleShipJson(state) + ","
                 + "others:" + getSightRangeJson()
                 + "}";
     }
