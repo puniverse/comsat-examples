@@ -101,7 +101,6 @@ public class Spaceship extends BasicActor<Object, Void> {
     // The public state is only updated by the owning Spaceship, and only in a SB transaction.
     // Therefore the owning spaceship can read it any time, but anyone else (other spacehips or the renderer) must only do so in
     // a transaction.
-
     public Spaceship(Spaceships global, int id, Phaser phaser) {
         this(global, id, phaser, null);
     }
@@ -350,7 +349,7 @@ public class Spaceship extends BasicActor<Object, Void> {
         try (ElementUpdater1<Record<SpaceshipState>> updater = global.sb.update(state.get($token))) {
             state.set($ax, ax);
             state.set($ay, ay);
-            
+
             move(now);
             state.set($status, status);
             state.set($timeFired, timeFired);
@@ -675,11 +674,10 @@ public class Spaceship extends BasicActor<Object, Void> {
         if (client != null && status == Status.ALIVE && (forceSend || (now - lastSent > 100))) {
             this.lastSent = now;
             final String jsonMessage = getJsonMessage(now);
-//                        timesHit = 0;
-//                        System.out.println("sending: " + jsonMessage);
+            // timesHit = 0;
+            // System.out.println("sending: " + jsonMessage);
             client.send(new WebDataMessage(ref(), jsonMessage));
         }
-//                        sender.send(new WebSocketMessage("{th: " + timesHit + ". pos: (" + state.x + "," + state.y + "), n: [" + getSightRange() + "]}"));
     }
 
     private final static DecimalFormat df = new DecimalFormat("#.###");

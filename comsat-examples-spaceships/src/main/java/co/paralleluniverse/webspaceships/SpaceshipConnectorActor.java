@@ -45,14 +45,20 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                 } else if (message instanceof WebSocketOpened) {
                     openMetric.mark();
 
-                    watch(((WebSocketOpened)message).getFrom()); // watch client
+                    client = ((WebSocketOpened) message).getFrom();
+                    
+                    System.out.println("NEW CLIENT " + client + ": " + loginName);
+                    
+                    watch(client);
                 } else if (message instanceof WebDataMessage) {
                     rcvMetric.mark();
                     WebDataMessage msg = (WebDataMessage) message;
                     if (spaceship == null) { // too many players
                         spaceship = spaceships.spawnControlledSpaceship(client, "c." + loginName);
-                        if (spaceship == null)
+                        if (spaceship == null) {
+                            System.out.println("TOO MANY PLAYERS");
                             break;
+                        }
 
                         watch(spaceship);
                     }
@@ -62,12 +68,13 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     ActorRef actor = ((ExitMessage) message).getActor();
                     if (actor == spaceship) { // the spaceship is dead
                         spaceships.notifyControlledSpaceshipDied();
-                        spaceship = null;
+                        spaceship = null; // create a new spaceship
                     } else { // the client is dead
                         if (spaceship != null)
                             spaceship.send(new WebDataMessage(self(), "exit"));
+                        System.out.println("CLIENT " + client + " IS DEAD: " + loginName);
+                        break;
                     }
-                    break;
                 }
             }
         } catch (Exception e) {
