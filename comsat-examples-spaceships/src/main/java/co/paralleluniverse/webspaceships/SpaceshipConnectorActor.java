@@ -36,44 +36,43 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     if (loginName == null)
                         msg.getFrom().send(new HttpResponse(self(), ok(msg, nameFormHtml())));
                     else {
-                        loginName = trim(loginName.replaceAll("[\"\'<>/\\\\]", ""),10); // protect from js injection attacks
-                        if (spaceships.getControlledAmmount().get() / spaceships.players > 0.9) {
+                        loginName = truncate(loginName.replaceAll("[\"\'<>/\\\\]", ""), 10); // protect from js injection attacks
+                        if (spaceships.getControlledAmmount().get() / spaceships.players > 0.9)
                             msg.getFrom().send(new HttpResponse(self(), ok(msg, noMoreSpaceshipsHtml())));
-                        } else {
+                        else
                             msg.getFrom().send(new HttpResponse(self(), ok(msg, gameHtml())));
-                        }
                     }
                 } else if (message instanceof WebSocketOpened) {
                     openMetric.mark();
-                    WebSocketOpened msg = (WebSocketOpened) message;
-                    client = msg.getFrom();
-                    watch(client);
+
+                    watch(((WebSocketOpened)message).getFrom()); // watch client
                 } else if (message instanceof WebDataMessage) {
                     rcvMetric.mark();
                     WebDataMessage msg = (WebDataMessage) message;
                     if (spaceship == null) { // 
                         spaceship = spaceships.spawnControlledSpaceship(client, "c." + loginName);
-                        if (spaceship == null) {
-                            return null;
-                        }
+                        if (spaceship == null)
+                            break;
+
                         watch(spaceship);
                     }
                     if (msg.getFrom() == client)
                         spaceship.send(msg);
                 } else if (message instanceof ExitMessage) {
                     ActorRef actor = ((ExitMessage) message).getActor();
-                    if (actor == spaceship) {
+                    if (actor == spaceship) { // the spaceship is dead
                         spaceships.notifyControlledSpaceshipDied();
                         spaceship = null;
-                    } else {
-                        if (spaceship==null)
+                    } else { // the client is dead
+                        if (spaceship != null)
                             spaceship.send(new WebDataMessage(self(), "exit"));
                     }
+                    break;
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();           
-//            throw new RuntimeException();
+            e.printStackTrace();
+            // throw new RuntimeException();
         }
         return null;
     }
@@ -81,7 +80,7 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
     @Override
     protected Object handleLifecycleMessage(LifecycleMessage m) {
         if (m instanceof ExitMessage)
-            return m;
+            return m; // handle this message in the main loop
         return super.handleLifecycleMessage(m);
     }
 
@@ -125,10 +124,7 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                 + "";
     }
 
-    void verifySpaceshipNotDead(ActorRef<Object> spaceship) throws InterruptedException, SuspendExecution {
-    }
-
-    private String trim(String s, int len) {
+    private static String truncate(String s, int len) {
         return s.substring(0, Math.min(len, s.length()));
     }
 }

@@ -59,7 +59,7 @@ public class Spaceships {
     final LongAdder spaceshipsCycles = new LongAdder();
     private long cycleStart;
     private Supervisor supervisor;
-    private AtomicInteger controlledAmmount = new AtomicInteger();
+    private AtomicInteger controlledCount = new AtomicInteger();
     public final int players;
     private final static Counter counterMetric = Metrics.counter("players");
 
@@ -179,8 +179,8 @@ public class Spaceships {
     }
 
     public ActorRef<Object> spawnControlledSpaceship(ActorRef<WebDataMessage> controller, String name) {
-        if (controlledAmmount.incrementAndGet() > players) {
-            controlledAmmount.decrementAndGet();
+        if (controlledCount.incrementAndGet() > players) {
+            controlledCount.decrementAndGet();
             return null;
         }
         counterMetric.inc();
@@ -191,7 +191,7 @@ public class Spaceships {
 
     public void notifyControlledSpaceshipDied() {
         counterMetric.dec();
-        controlledAmmount.decrementAndGet();
+        controlledCount.decrementAndGet();
     }
 
     public int getN() {
@@ -199,7 +199,7 @@ public class Spaceships {
     }
 
     public AtomicInteger getControlledAmmount() {
-        return controlledAmmount;
+        return controlledCount;
     }
 
     public void mrun() throws Exception {

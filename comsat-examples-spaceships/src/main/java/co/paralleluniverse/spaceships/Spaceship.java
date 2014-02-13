@@ -96,7 +96,7 @@ public class Spaceship extends BasicActor<Object, Void> {
     private long exVelocityUpdated = 0;
     private double turn;
     private double throttle;
-    private ActorRef<WebDataMessage> controller;
+    private ActorRef<WebDataMessage> client;
     private long lastSent;
 
     // state is accessed by other ships and the renderer through stateRecord
@@ -127,12 +127,12 @@ public class Spaceship extends BasicActor<Object, Void> {
         this(global, id, phaser, null);
     }
 
-    Spaceship(Spaceships global, int id, Phaser phaser, ActorRef<WebDataMessage> controller) {
+    Spaceship(Spaceships global, int id, Phaser phaser, ActorRef<WebDataMessage> client) {
         super(new MailboxConfig(10, Channels.OverflowPolicy.THROW));
         this.id = id;
         this.state = SpaceshipState.stateType.newInstance();
         this.phaser = phaser;
-        this.controller = controller;
+        this.client = client;
 
         this.global = global;
         this.random = global.random;
@@ -174,7 +174,7 @@ public class Spaceship extends BasicActor<Object, Void> {
                         WebDataMessage wsm = (WebDataMessage) message;
                         String dataString = wsm.getStringBody();
                         if (dataString.startsWith("ping")) {
-                            controller.send(new WebDataMessage(ref(), "pong," + dataString.substring("ping ".length()) + "," + global.getN() + ","
+                            client.send(new WebDataMessage(ref(), "pong," + dataString.substring("ping ".length()) + "," + global.getN() + ","
                                     + global.getControlledAmmount()));
                         } else {
                             switch (dataString) {
@@ -204,8 +204,8 @@ public class Spaceship extends BasicActor<Object, Void> {
                     } else if (message instanceof Shot) {
                         boolean killed = shot(now, ((Shot) message).x, ((Shot) message).y);
 
-                        if (killed && controller != null)
-                            controller.send(new WebDataMessage(ref(), "killed"));
+                        if (killed && client != null)
+                            client.send(new WebDataMessage(ref(), "killed"));
                         if (killed && phaser != null) {
 
                             deregistered = true;
@@ -222,7 +222,7 @@ public class Spaceship extends BasicActor<Object, Void> {
                         record(1, "Spaceship", "doRun", "%s: gone", this);
                         return null;
                     } else if (status == Status.ALIVE) {
-                        if (controller == null) {
+                        if (client == null) {
                             if (!isLockedOnTarget()) {
                                 if (canFight(now) && wantToFight(now))
                                     searchForTargets();
@@ -429,7 +429,7 @@ public class Spaceship extends BasicActor<Object, Void> {
         final long lastMoved = state.get($lastMoved);
 
         if (lastMoved > 0 & now > lastMoved) {
-            if (controller != null) {
+            if (client != null) {
                 if (Math.abs(turn) > 1e-4) { // controlled from webactor
                     double mag = Math.max(mag(state.get($vx), state.get($vy)), 2);
                     double dir = Math.atan2(state.get($vy), state.get($vx));
@@ -694,12 +694,12 @@ public class Spaceship extends BasicActor<Object, Void> {
     }
 
     void sendUpdateToClient(final long now, boolean forceSend) throws InterruptedException, SuspendExecution {
-        if (controller != null && status == Status.ALIVE && (forceSend || (now - lastSent > 100))) {
+        if (client != null && status == Status.ALIVE && (forceSend || (now - lastSent > 100))) {
             this.lastSent = now;
             final String jsonMessage = getJsonMessage(now);
 //                        timesHit = 0;
 //                        System.out.println("sending: " + jsonMessage);
-            controller.send(new WebDataMessage(ref(), jsonMessage));
+            client.send(new WebDataMessage(ref(), jsonMessage));
         }
 //                        sender.send(new WebSocketMessage("{th: " + timesHit + ". pos: (" + state.x + "," + state.y + "), n: [" + getSightRange() + "]}"));
     }
