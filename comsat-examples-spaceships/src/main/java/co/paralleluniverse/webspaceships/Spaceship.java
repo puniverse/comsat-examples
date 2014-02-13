@@ -17,7 +17,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package co.paralleluniverse.spaceships;
+package co.paralleluniverse.webspaceships;
 
 import co.paralleluniverse.actors.ActorRef;
 import co.paralleluniverse.actors.BasicActor;
@@ -31,14 +31,13 @@ import co.paralleluniverse.fibers.*;
 import co.paralleluniverse.spacebase.AABB;
 import static co.paralleluniverse.spacebase.AABB.X;
 import static co.paralleluniverse.spacebase.AABB.Y;
-import co.paralleluniverse.spacebase.ElementUpdater;
 import co.paralleluniverse.spacebase.MutableAABB;
 import co.paralleluniverse.spacebase.SpatialQueries;
 import co.paralleluniverse.spacebase.SpatialToken;
 import co.paralleluniverse.spacebase.quasar.Element;
 import co.paralleluniverse.spacebase.quasar.ElementUpdater1;
 import co.paralleluniverse.spacebase.quasar.ResultSet;
-import static co.paralleluniverse.spaceships.SpaceshipState.*;
+import static co.paralleluniverse.webspaceships.SpaceshipState.*;
 import co.paralleluniverse.strands.channels.Channels;
 import co.paralleluniverse.strands.concurrent.Phaser;
 import static java.lang.Math.*;
@@ -99,26 +98,6 @@ public class Spaceship extends BasicActor<Object, Void> {
     private ActorRef<WebDataMessage> client;
     private long lastSent;
 
-    // state is accessed by other ships and the renderer through stateRecord
-    private static class State {
-        ActorRef<Object> spaceship;
-        SpatialToken token;
-        Status status = Status.ALIVE;
-        long lastMoved = -1L;
-        long exVelocityUpdated;
-        double x;
-        double y;
-        double vx;
-        double vy;
-        double ax;
-        double ay;
-        double exVx = 0;
-        double exVy = 0;
-        long timeFired = 0;
-        long blowTime = 0;
-        double shotLength = 10f;
-        int timesHit = 0;
-    }
     // The public state is only updated by the owning Spaceship, and only in a SB transaction.
     // Therefore the owning spaceship can read it any time, but anyone else (other spacehips or the renderer) must only do so in
     // a transaction.
@@ -175,7 +154,7 @@ public class Spaceship extends BasicActor<Object, Void> {
                         String dataString = wsm.getStringBody();
                         if (dataString.startsWith("ping")) {
                             client.send(new WebDataMessage(ref(), "pong," + dataString.substring("ping ".length()) + "," + global.getN() + ","
-                                    + global.getControlledAmmount()));
+                                    + global.getControlledCount()));
                         } else {
                             switch (dataString) {
                                 case "subscribe":
@@ -261,7 +240,6 @@ public class Spaceship extends BasicActor<Object, Void> {
     }
 
     private void searchForTargets() throws SuspendExecution, InterruptedException {
-
         record(1, "Spaceship", "searchForTargets", "%s: searching...", this);
 
         try (ResultSet<Record<SpaceshipState>> rs = global.sb.query(new RadarQuery(state.get($x), state.get($y), state.get($vx), state.get($vy), toRadians(30), MAX_SEARCH_RANGE))) {

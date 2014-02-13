@@ -12,7 +12,7 @@ import co.paralleluniverse.comsat.webactors.WebActor;
 import co.paralleluniverse.comsat.webactors.WebDataMessage;
 import co.paralleluniverse.comsat.webactors.WebSocketOpened;
 import co.paralleluniverse.fibers.SuspendExecution;
-import static co.paralleluniverse.spaceships.Spaceships.spaceships;
+import static co.paralleluniverse.webspaceships.Spaceships.spaceships;
 import com.codahale.metrics.Meter;
 
 @WebActor(httpUrlPatterns = "/login", webSocketUrlPatterns = "/game")
@@ -36,8 +36,8 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     if (loginName == null)
                         msg.getFrom().send(new HttpResponse(self(), ok(msg, nameFormHtml())));
                     else {
-                        loginName = truncate(loginName.replaceAll("[\"\'<>/\\\\]", ""), 10); // protect from js injection attacks
-                        if (spaceships.getControlledAmmount().get() / spaceships.players > 0.9)
+                        loginName = truncate(loginName.replaceAll("[\"\'<>/\\\\]", ""), 10); // protect against js injection
+                        if (spaceships.getControlledCount().get() / spaceships.players > 0.9)
                             msg.getFrom().send(new HttpResponse(self(), ok(msg, noMoreSpaceshipsHtml())));
                         else
                             msg.getFrom().send(new HttpResponse(self(), ok(msg, gameHtml())));
@@ -49,7 +49,7 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                 } else if (message instanceof WebDataMessage) {
                     rcvMetric.mark();
                     WebDataMessage msg = (WebDataMessage) message;
-                    if (spaceship == null) { // 
+                    if (spaceship == null) { // too many players
                         spaceship = spaceships.spawnControlledSpaceship(client, "c." + loginName);
                         if (spaceship == null)
                             break;

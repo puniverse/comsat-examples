@@ -17,7 +17,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package co.paralleluniverse.spaceships;
+package co.paralleluniverse.webspaceships;
 
 import co.paralleluniverse.spacebase.AABB;
 import co.paralleluniverse.spacebase.MutableAABB;
@@ -25,10 +25,6 @@ import static java.lang.Math.*;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- *
- * @author pron
- */
 public class RandSpatial {
 
 //    private final Random random;

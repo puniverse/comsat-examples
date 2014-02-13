@@ -17,7 +17,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package co.paralleluniverse.spaceships;
+package co.paralleluniverse.webspaceships;
 
 import co.paralleluniverse.db.tree.QueryResult;
 import co.paralleluniverse.spacebase.AABB;
@@ -25,8 +25,8 @@ import co.paralleluniverse.spacebase.SpatialQuery;
 
 class LineDistanceQuery<T> implements SpatialQuery<T> {
     public static final int LINE_ACCURACY = 500;
-    private AABB lineAABB;
-    private double a, b, norm;
+    private final AABB lineAABB;
+    private final double a, b, norm;
     private final double maxDist;
 
     public LineDistanceQuery(double x0, double x1, double y0, double y1, double dist) {

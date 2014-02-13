@@ -17,16 +17,12 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package co.paralleluniverse.spaceships;
+package co.paralleluniverse.webspaceships;
 
 import co.paralleluniverse.db.tree.QueryResult;
 import co.paralleluniverse.spacebase.AABB;
 import co.paralleluniverse.spacebase.SpatialQuery;
 
-/**
- *
- * @author eitan
- */
 public class RadarQuery implements SpatialQuery<Object> {
     private final double x, y;
     private final double dev;

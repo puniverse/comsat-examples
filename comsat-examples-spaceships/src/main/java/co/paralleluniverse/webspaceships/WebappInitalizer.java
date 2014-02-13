@@ -1,7 +1,6 @@
 package co.paralleluniverse.webspaceships;
 
-import co.paralleluniverse.spaceships.Spaceships;
-import static co.paralleluniverse.spaceships.Spaceships.spaceships;
+import static co.paralleluniverse.webspaceships.Spaceships.spaceships;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
