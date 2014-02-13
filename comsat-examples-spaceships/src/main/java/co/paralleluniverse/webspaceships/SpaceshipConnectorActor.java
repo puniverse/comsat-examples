@@ -85,15 +85,6 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
         return super.handleLifecycleMessage(m);
     }
 
-    String getResource(String resourceName) {
-        try {
-            return com.google.common.io.Resources.toString(com.google.common.io.Resources.getResource(resourceName),
-                    com.google.common.base.Charsets.UTF_8);
-        } catch (java.io.IOException ex) {
-            return "error " + ex;
-        }
-    }
-
     String nameFormHtml() {
         return "<html><h1>Parallel Universe Spaceships webactors demo</h1>\n"
                 + "<h3>Please enter your name:</h3>"

@@ -42,7 +42,6 @@ import static co.paralleluniverse.spaceships.SpaceshipState.*;
 import co.paralleluniverse.strands.channels.Channels;
 import co.paralleluniverse.strands.concurrent.Phaser;
 import static java.lang.Math.*;
-import java.nio.FloatBuffer;
 import java.text.DecimalFormat;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -53,24 +52,6 @@ import java.util.concurrent.TimeUnit;
  * A spaceship
  */
 public class Spaceship extends BasicActor<Object, Void> {
-    public static final int MAX_SPACESHIPS_IN_MSG = 20;
-    private double turn;
-    private double gas;
-    private ActorRef<WebDataMessage> controller;
-    private long lastSent;
-    private final static DecimalFormat df = new DecimalFormat("#.###");
-
-    void sendToController(final long now, boolean forceSend) throws InterruptedException, SuspendExecution {
-        if (controller != null && status == Status.ALIVE && (forceSend || (now - lastSent > 100))) {
-            this.lastSent = now;
-            final String jsonMessage = getJsonMessage(now);
-//                        timesHit = 0;
-//                        System.out.println("sending: " + jsonMessage);
-            controller.send(new WebDataMessage(ref(), jsonMessage));
-        }
-//                        sender.send(new WebSocketMessage("{th: " + timesHit + ". pos: (" + state.x + "," + state.y + "), n: [" + getSightRange() + "]}"));
-    }
-
     public static enum Status {
         ALIVE, BLOWING_UP, GONE
     };
@@ -90,6 +71,7 @@ public class Spaceship extends BasicActor<Object, Void> {
     private static final int SHOOT_RANGE = 200;
     private static final int SHOOT_ACCURACY = 10;
     private static final double SHOOT_PROBABLITY = 0.1;
+    public static final int MAX_SPACESHIPS_IN_MSG = 20;
     //
     private final Spaceships global;
     private final RandSpatial random;
@@ -110,6 +92,10 @@ public class Spaceship extends BasicActor<Object, Void> {
     private double shotLength = 10f;
     // "external velocity" does not result from thruster (but from nearby explosions or by getting hit), and threfore does not affect heading
     private long exVelocityUpdated = 0;
+    private double turn;
+    private double throttle;
+    private ActorRef<WebDataMessage> controller;
+    private long lastSent;
 
     // state is accessed by other ships and the renderer through stateRecord
     private static class State {
@@ -202,16 +188,16 @@ public class Spaceship extends BasicActor<Object, Void> {
                                     this.turn = Math.max(-3.0, turn - 1.0);
                                     break;
                                 case "up":
-                                    this.gas = Math.min(3.0, gas + 1.0);
+                                    this.throttle = Math.min(3.0, throttle + 1.0);
                                     break;
                                 case "down":
-                                    this.gas = Math.max(-3.0, gas - 1.0);
+                                    this.throttle = Math.max(-3.0, throttle - 1.0);
                                     break;
                                 case "exit":
                                     blow(now);
                                     break;
                             }
-                            sendToController(now, true);
+                            sendUpdateToClient(now, true);
                         }
                     } else if (message instanceof Shot) {
                         boolean killed = shot(now, ((Shot) message).x, ((Shot) message).y);
@@ -228,7 +214,7 @@ public class Spaceship extends BasicActor<Object, Void> {
                 } else {
                     // no message
                     runDelayed(now); // apply delayed actions
-                    sendToController(now, false);
+                    sendUpdateToClient(now, false);
 
                     if (status == Status.GONE) {
                         record(1, "Spaceship", "doRun", "%s: gone", this);
@@ -270,52 +256,6 @@ public class Spaceship extends BasicActor<Object, Void> {
 
     private boolean wantToFight(long now) {
         return random.nextFloat() < SEARCH_PROBABLITY;
-    }
-
-    private String getJsonMessage(long now) throws InterruptedException, SuspendExecution {
-        return "{"
-                + "now:" + now + ","
-                + "life:" + (TIMES_HIT_TO_BLOW - timesHit) + ","
-                + "self:" + getSingleShipJson(state) + ","
-                + "others:" + getSightRangeJson()
-                + "}";
-    }
-
-    private String getSightRangeJson() throws InterruptedException, SuspendExecution {
-        StringBuilder sb = new StringBuilder();
-        sb.append('[');
-//        try (ResultSet<Record<SpaceshipState>> rs = global.sb.query(new RadarQuery(state.x, state.y, state.vx, state.vy, toRadians(60), MAX_SEARCH_RANGE * 2))) {
-        try (ResultSet<Record<SpaceshipState>> rs = global.sb.query(SpatialQueries.range(getAABB(), MAX_SEARCH_RANGE * 2))) {
-            int i = 0;
-            for (Record<SpaceshipState> s : rs.getResultReadOnly()) {
-                if (++i > MAX_SPACESHIPS_IN_MSG)
-                    break;
-                if (s.get($token) != state.get($token))
-                    sb.append(getSingleShipJson(s)).append(',');
-            }
-        }
-        if (sb.length() > 1)
-            sb.deleteCharAt(sb.length() - 1);
-        sb.append(']');
-        return sb.toString();
-    }
-
-    private static String getSingleShipJson(Record<SpaceshipState> s) {
-        return makeJson(s, s.get($spaceship).getName(), $x, $y, $vx, $vy, $ax, $ay, $exVx, $exVy, $exVelocityUpdated, $timeFired, $shotLength, $blowTime);
-    }
-
-    private static <R> String makeJson(Record<R> r, String name, Field<R, ?>... fields) {
-        StringBuilder sb = new StringBuilder();
-        sb.append('{');
-        sb.append("name:\"").append(name).append('\"').append(',');
-        for (Field<R, ?> f : fields) {
-            final Object get = r.get(f);
-            String value = get instanceof Double ? df.format(get) : get.toString();
-            sb.append(f.name()).append(':').append(value).append(',');
-        }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append('}');
-        return sb.toString();
     }
 
     private void searchForTargets() throws SuspendExecution, InterruptedException {
@@ -500,12 +440,12 @@ public class Spaceship extends BasicActor<Object, Void> {
                     state.set($vx, mag * Math.cos(dir));
                     turn *= 0.8;
                 }
-                if (Math.abs(gas) > 1e-4) {
+                if (Math.abs(throttle) > 1e-4) {
                     double mag = Math.max(mag(state.get($vx), state.get($vy)), 2);
-                    double newMag = Math.max(1, Math.min(SPEED_LIMIT, mag + 10.0 * gas));
+                    double newMag = Math.max(1, Math.min(SPEED_LIMIT, mag + 10.0 * throttle));
                     state.set($vx, state.get($vx) * newMag / mag);
                     state.set($vy, state.get($vy) * newMag / mag);
-                    gas *= 0.8;
+                    throttle *= 0.8;
                 }
             }
 
@@ -755,40 +695,63 @@ public class Spaceship extends BasicActor<Object, Void> {
         return command != null ? command.time : Long.MAX_VALUE;
     }
 
-    public static void getCurrentLocation(Record<SpaceshipState> s, long currentTime, FloatBuffer buffer) {
-        double dt = (double) (currentTime - s.get($lastMoved)) / TimeUnit.SECONDS.toMillis(1);
-        double dext = (double) (currentTime - s.get($exVelocityUpdated)) / TimeUnit.SECONDS.toMillis(1);
-
-        double currentX = s.get($x);
-        double currentY = s.get($y);
-
-        double exVx = s.get($exVx);
-        double exVy = s.get($exVx);
-
-        if (s.get($exVelocityUpdated) > 0 & dext > 0) {
             exVx /= (1 + 8 * dext);
             exVy /= (1 + 8 * dext);
+    void sendUpdateToClient(final long now, boolean forceSend) throws InterruptedException, SuspendExecution {
+        if (controller != null && status == Status.ALIVE && (forceSend || (now - lastSent > 100))) {
+            this.lastSent = now;
+            final String jsonMessage = getJsonMessage(now);
+//                        timesHit = 0;
+//                        System.out.println("sending: " + jsonMessage);
         }
-
-        final double dt2 = dt * dt;
-
-        currentX = currentX + (s.get($vx) + exVx) * dt + s.get($ax) * dt2;
-        currentY = currentY + (s.get($vy) + exVy) * dt + s.get($ay) * dt2;
-
-        buffer.put((float) currentX);
-        buffer.put((float) currentY);
+//                        sender.send(new WebSocketMessage("{th: " + timesHit + ". pos: (" + state.x + "," + state.y + "), n: [" + getSightRange() + "]}"));
     }
 
-    public static double getCurrentHeading(Record<SpaceshipState> s, long currentTime) {
-        double dt = (double) (currentTime - s.get($lastMoved)) / TimeUnit.SECONDS.toMillis(1);
+    private final static DecimalFormat df = new DecimalFormat("#.###");
 
-        double currentVx = s.get($vx);
-        double currentVy = s.get($vy);
+    private String getJsonMessage(long now) throws InterruptedException, SuspendExecution {
+        return "{"
+                + "now:" + now + ","
+                + "life:" + (TIMES_HIT_TO_BLOW - timesHit) + ","
+                + "others:" + getSightRangeJson()
+                + "}";
+    }
 
-        currentVx = currentVx + s.get($ax) * dt;
-        currentVy = currentVy + s.get($ay) * dt;
+    private String getSightRangeJson() throws InterruptedException, SuspendExecution {
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+//        try (ResultSet<Record<SpaceshipState>> rs = global.sb.query(new RadarQuery(state.x, state.y, state.vx, state.vy, toRadians(60), MAX_SEARCH_RANGE * 2))) {
+        try (ResultSet<Record<SpaceshipState>> rs = global.sb.query(SpatialQueries.range(getAABB(), MAX_SEARCH_RANGE * 2))) {
+            int i = 0;
+            for (Record<SpaceshipState> s : rs.getResultReadOnly()) {
+                if (++i > MAX_SPACESHIPS_IN_MSG)
+                    break;
+                if (s.get($token) != state.get($token))
+                    sb.append(getSingleShipJson(s)).append(',');
+            }
+        }
+        if (sb.length() > 1)
+            sb.deleteCharAt(sb.length() - 1);
+        sb.append(']');
+        return sb.toString();
+    }
 
-        return atan2(currentVx, currentVy);
+    private static String getSingleShipJson(Record<SpaceshipState> s) {
+        return makeJson(s, s.get($spaceship).getName(), $x, $y, $vx, $vy, $ax, $ay, $exVx, $exVy, $exVelocityUpdated, $timeFired, $shotLength, $blowTime);
+    }
+
+    private static <R> String makeJson(Record<R> r, String name, Field<R, ?>... fields) {
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        sb.append("name:\"").append(name).append('\"').append(',');
+        for (Field<R, ?> f : fields) {
+            final Object get = r.get(f);
+            String value = get instanceof Double ? df.format(get) : get.toString();
+            sb.append(f.name()).append(':').append(value).append(',');
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append('}');
+        return sb.toString();
     }
 
     static class Shot {
