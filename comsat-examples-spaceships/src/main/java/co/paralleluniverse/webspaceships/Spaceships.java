@@ -59,7 +59,7 @@ public class Spaceships {
     final LongAdder spaceshipsCycles = new LongAdder();
     private long cycleStart;
     private Supervisor supervisor;
-    private AtomicInteger controlledCount = new AtomicInteger();
+    private final AtomicInteger controlledCount = new AtomicInteger();
     public final int players;
     private final static Counter counterMetric = Metrics.counter("players");
 

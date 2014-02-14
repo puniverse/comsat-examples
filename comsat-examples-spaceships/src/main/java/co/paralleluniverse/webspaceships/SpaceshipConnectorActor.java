@@ -4,6 +4,7 @@ import co.paralleluniverse.actors.ActorRef;
 import co.paralleluniverse.actors.BasicActor;
 import co.paralleluniverse.actors.ExitMessage;
 import co.paralleluniverse.actors.LifecycleMessage;
+import co.paralleluniverse.actors.ShutdownMessage;
 import co.paralleluniverse.common.monitoring.Metrics;
 import co.paralleluniverse.comsat.webactors.HttpRequest;
 import co.paralleluniverse.comsat.webactors.HttpResponse;
@@ -65,9 +66,9 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     if (msg.getFrom() == client)
                         spaceship.send(msg);
                 } else if (message instanceof ExitMessage) {
+                    spaceships.notifyControlledSpaceshipDied();
                     ActorRef actor = ((ExitMessage) message).getActor();
                     if (actor == spaceship) { // the spaceship is dead
-                        spaceships.notifyControlledSpaceshipDied();
                         spaceship = null; // create a new spaceship
                     } else { // the client is dead
                         if (spaceship != null)
