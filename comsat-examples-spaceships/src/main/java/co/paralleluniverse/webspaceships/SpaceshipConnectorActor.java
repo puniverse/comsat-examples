@@ -47,9 +47,9 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     openMetric.mark();
 
                     client = ((WebSocketOpened) message).getFrom();
-                    
+
                     System.out.println("NEW CLIENT " + client + ": " + loginName);
-                    
+
                     watch(client);
                 } else if (message instanceof WebDataMessage) {
                     rcvMetric.mark();
@@ -66,7 +66,8 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     if (msg.getFrom() == client)
                         spaceship.send(msg);
                 } else if (message instanceof ExitMessage) {
-                    spaceships.notifyControlledSpaceshipDied();
+                    if (spaceship != null)
+                        spaceships.notifyControlledSpaceshipDied();
                     ActorRef actor = ((ExitMessage) message).getActor();
                     if (actor == spaceship) { // the spaceship is dead
                         spaceship = null; // create a new spaceship
