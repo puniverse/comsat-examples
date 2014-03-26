@@ -7,9 +7,9 @@ dependencies {
 }
 
 dependencies {
-    compile 'co.paralleluniverse:quasar-core:0.4.0'
-    compile 'co.paralleluniverse:comsat-servlet:0.1.0'
-    compile 'co.paralleluniverse:comsat-jdbc:0.1.0'
+    compile "co.paralleluniverse:quasar-core:$quasarVersion"
+    compile "co.paralleluniverse:comsat-servlet:$comsatVersion"
+    compile "co.paralleluniverse:comsat-jdbc:$comsatVersion"
     
     compile 'org.eclipse.jetty:jetty-servlet:9.1.0.RC0'
     compile 'org.eclipse.jetty:jetty-server:9.1.0.RC0'
@@ -20,7 +20,7 @@ dependencies {
     compile project(':test-servlet')
     compile project(':comsat-examples-servlet')
     
-    quasar  'co.paralleluniverse:quasar-core:0.4.0'
+    quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
 }
 
 run {

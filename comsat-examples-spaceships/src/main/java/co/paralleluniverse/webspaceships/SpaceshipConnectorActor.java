@@ -35,13 +35,13 @@ public class SpaceshipConnectorActor extends BasicActor<Object, Void> {
                     HttpRequest msg = (HttpRequest) message;
                     loginName = msg.getParameter("name");
                     if (loginName == null)
-                        msg.getFrom().send(new HttpResponse(self(), ok(msg, nameFormHtml())));
+                        msg.getFrom().send(ok(self(), msg, nameFormHtml()).build());
                     else {
                         loginName = truncate(loginName.replaceAll("[\"\'<>/\\\\]", ""), 10); // protect against js injection
                         if (spaceships.getControlledCount().get() / spaceships.players > 0.9)
-                            msg.getFrom().send(new HttpResponse(self(), ok(msg, noMoreSpaceshipsHtml())));
+                            msg.getFrom().send(ok(self(), msg, noMoreSpaceshipsHtml()).build());
                         else
-                            msg.getFrom().send(new HttpResponse(self(), ok(msg, gameHtml())));
+                            msg.getFrom().send(ok(self(), msg, gameHtml()).build());
                     }
                 } else if (message instanceof WebSocketOpened) {
                     openMetric.mark();

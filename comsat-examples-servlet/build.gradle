@@ -1,7 +1,8 @@
 apply plugin: 'war' 
 
 dependencies {
-	compile 'co.paralleluniverse:comsat-servlet:0.1.0'
-	compile 'co.paralleluniverse:comsat-jax-rs-client:0.1.0'
-	runtime 'co.paralleluniverse:comsat-jdbc:0.1.0'
+    providedCompile "co.paralleluniverse:quasar-core:$quasarVersion"
+    compile "co.paralleluniverse:comsat-servlet:$comsatVersion"
+    compile "co.paralleluniverse:comsat-jax-rs-client:$comsatVersion"
+    runtime "co.paralleluniverse:comsat-jdbc:$comsatVersion"
 }

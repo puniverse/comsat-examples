@@ -2,6 +2,9 @@ import org.gradle.api.artifacts.*
 
 apply plugin: 'base' // To add "clean" task to the root project.
 
+mainClassName = 'example.tomcat.EmbeddedTomcat'
+ext.mainClass = mainClassName
+
 subprojects {
     apply from: rootProject.file('common.gradle')
 }
@@ -20,5 +23,5 @@ task mergedJavadoc(type: Javadoc, description: 'Creates Javadoc from all the pro
 }
 
 task wrapper(type: Wrapper, description: 'Creates and deploys the Gradle wrapper to the current directory.') {
-    gradleVersion = '1.10'
+    gradleVersion = '1.11'
 }

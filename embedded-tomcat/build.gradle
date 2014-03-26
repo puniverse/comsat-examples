@@ -1,12 +1,13 @@
+
 dependencies {
-    compile 'org.apache.tomcat.embed:tomcat-embed-core:8.0.0-RC5'
-    compile 'org.apache.tomcat.embed:tomcat-embed-jasper:8.0.0-RC5'
-    runtime 'org.apache.tomcat.embed:tomcat-embed-logging-log4j:8.0.0-RC5'
-    compile 'org.apache.tomcat:tomcat-websocket:8.0.0-RC5'
-    runtime 'co.paralleluniverse:comsat-tomcat-loader:0.1.0' // <---------------------------
-    runtime 'co.paralleluniverse:comsat-jdbc:0.1.0' // <--- ???
+    compile 'org.apache.tomcat.embed:tomcat-embed-core:8.0.3'
+    compile 'org.apache.tomcat.embed:tomcat-embed-jasper:8.0.3'
+    runtime 'org.apache.tomcat.embed:tomcat-embed-logging-log4j:8.0.3'
+    compile 'org.apache.tomcat:tomcat-websocket:8.0.3'
+    runtime "co.paralleluniverse:comsat-jdbc:$comsatVersion" // <--- ???
+    runtime "co.paralleluniverse:comsat-tomcat-loader:$comsatVersion" // :jdk8
     compile 'org.apache.derby:derby:10.10.1.1'        
-    runtime 'org.apache.tomcat:tomcat-dbcp:8.0.0-RC5'
+    runtime 'org.apache.tomcat:tomcat-dbcp:8.0.3'
 }
 
 task deployToTomcat(type: Copy) {
@@ -36,7 +37,28 @@ run {
     classpath = sourceSets.main.runtimeClasspath
     if (project.hasProperty('service')) {args('service=true')}
     standardInput = System.in
-    jvmArgs "-ea"
+    
+    // hot code swapping
     systemProperty "co.paralleluniverse.actors.moduleDir", "${rootProject.projectDir}/modules"
+
+    // memory
+    jvmArgs '-Xmx1024m'
+    jvmArgs '-XX:+UseParallelGC'
+    jvmArgs '-XX:+UseCondCardMark'
+    // jvmArgs '-XX:+UseG1GC', '-XX:MaxGCPauseMillis=50'
+    
+    // profiling
+    // jvmArgs '-XX:+UnlockCommercialFeatures', '-XX:+FlightRecorder'
+    // jvmArgs '-verbose:gc'
+    // jvmArgs '-XX:+UnlockDiagnosticVMOptions', '-XX:+TraceClassLoading', '-XX:+LogCompilation' // use with jitwatch
+    // jvmArgs '-XX:+UnlockDiagnosticVMOptions', '-XX:+PrintInlining'
+    
+    // debugging
+    jvmArgs '-ea'
     // systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', 'true'
+    // systemProperty "co.paralleluniverse.debugMode", "true"
+    systemProperty "co.paralleluniverse.globalFlightRecorder", "true"
+    systemProperty "co.paralleluniverse.flightRecorderDumpFile", "war.log"
+    systemProperty "co.paralleluniverse.monitoring.flightRecorderLevel", "5"
+    systemProperty "co.paralleluniverse.monitoring.flightRecorderSize","100000" 
 }

@@ -210,7 +210,7 @@ public class Spaceship extends BasicActor<Object, Void> {
                         applyNeighborRejectionAndMove(now);
                     }
 
-                    global.spaceshipsCycles.increment();
+                    global.spaceshipsCycles.inc();
 
                     if (phaser != null)
                         phaser.arriveAndAwaitAdvance();

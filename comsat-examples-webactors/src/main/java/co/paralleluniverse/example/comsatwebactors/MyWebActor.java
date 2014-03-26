@@ -49,13 +49,12 @@ public class MyWebActor extends BasicActor<Object, Void> {
                     String blockingCallsOuput = BlockingCallsExample.executeSomeSql(ds)
                             + BlockingCallsExample.callSomeRS(httpClient)
                             + BlockingCallsExample.doSleep();
-                    msg.getFrom().send(new HttpResponse(self(),
-                            ok(msg, buildHtml(blockingCallsOuput, msg, i)).setContentType("text/html")
-                            .addCookie(cookie("userCookie", "value").build())));
+                    msg.getFrom().send(ok(self(), msg, buildHtml(blockingCallsOuput, msg, i))
+                            .setContentType("text/html")
+                            .addCookie(cookie("userCookie", "value").build()).build());
                 } // -------- request for SSE -------- 
                 else {
-                    HttpResponse response = new HttpResponse(self(), SSE.startSSE(msg));
-                    msg.getFrom().send(response);
+                    msg.getFrom().send(SSE.startSSE(self(), msg).build());
 
                     // We could use the selective receive in the next line to handle the response 
                     // (instead we let it be handled by the next if block)
@@ -94,7 +93,7 @@ public class MyWebActor extends BasicActor<Object, Void> {
     }
 
     private SendPort<WebDataMessage> wrapAsSSE(SendPort<WebDataMessage> actor) {
-        return Channels.map(actor, new Function<WebDataMessage, WebDataMessage>() {
+        return Channels.mapSend(actor, new Function<WebDataMessage, WebDataMessage>() {
             @Override
             public WebDataMessage apply(WebDataMessage f) {
                 return new WebDataMessage(f.getFrom(), SSE.event(f.getStringBody()));

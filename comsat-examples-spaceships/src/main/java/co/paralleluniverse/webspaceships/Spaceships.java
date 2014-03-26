@@ -40,7 +40,6 @@ import java.io.PrintStream;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import jsr166e.LongAdder;
 
 public class Spaceships {
     public static Spaceships spaceships;
@@ -56,7 +55,7 @@ public class Spaceships {
     private File metricsDir;
     private PrintStream configStream;
     private PrintStream timeStream;
-    final LongAdder spaceshipsCycles = new LongAdder();
+    final co.paralleluniverse.common.monitoring.Counter spaceshipsCycles = new co.paralleluniverse.common.monitoring.Counter();
     private long cycleStart;
     private Supervisor supervisor;
     private final AtomicInteger controlledCount = new AtomicInteger();
@@ -66,7 +65,7 @@ public class Spaceships {
     public Spaceships(Properties props) throws Exception {
         if (props.getProperty("parallelism") != null)
             System.setProperty("co.paralleluniverse.fibers.DefaultFiberPool.parallelism", props.getProperty("parallelism"));
-        final int parallelism = ((FiberForkJoinScheduler) DefaultFiberScheduler.getInstance()).getForkJoinPool().getParallelism();// Integer.parseInt(props.getProperty("parallelism", "2"));        
+        // final int parallelism = ((FiberForkJoinScheduler) DefaultFiberScheduler.getInstance()).getForkJoinPool().getParallelism();// Integer.parseInt(props.getProperty("parallelism", "2"));        
         double b = Double.parseDouble(props.getProperty("world-length", "20000"));
         this.bounds = AABB.create(-b / 2, b / 2, -b / 2 * 0.7, b / 2 * 0.7, -b / 2, b / 2);
         this.N = Integer.parseInt(props.getProperty("N", "10000"));
@@ -82,7 +81,7 @@ public class Spaceships {
 
         println("World bounds: " + bounds);
         println("N: " + N);
-        println("Parallelism: " + parallelism);
+        println("Parallelism: " + props.getProperty("parallelism"));
         println("Phaser: " + (phaser != null));
         println("Extrapolate: " + extrapolate);
         println();
@@ -213,7 +212,7 @@ public class Spaceships {
             for (int k = 0;; k++) {
                 Thread.sleep(1000);
 //                ActorRef<Object> child = sup.getChild("ship-1");
-                long cycles = spaceshipsCycles.sumThenReset();
+                long cycles = spaceshipsCycles.getAndReset();
                 long now = System.nanoTime();
 
                 double seconds = (double) (now - prevTime) * 1e-9;
