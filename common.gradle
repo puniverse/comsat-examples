@@ -9,8 +9,12 @@ apply plugin: 'application'
 String mavenGroupId = 'co.paralleluniverse'
 String mavenVersion = '0.1-SNAPSHOT'
 
-quasarVersion = '0.5.0'
-comsatVersion = '0.1.1'
+ext.quasarVersion = '0.6.0-SNAPSHOT'
+ext.comsatVersion = '0.2.0-SNAPSHOT'
+
+if (!hasProperty('mainClass')) {
+    ext.mainClass = ''
+}
 
 sourceCompatibility = '1.7'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
