@@ -5,7 +5,7 @@ configurations {
 dependencies {
     compile "co.paralleluniverse:comsat-dropwizard:$comsatVersion"
     runtime 'org.apache.derby:derby:10.10.1.1'    
-//    runtime 'mysql:mysql-connector-java:5.1.30'
+    //    runtime 'mysql:mysql-connector-java:5.1.30'
     quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
 }
 
@@ -14,7 +14,7 @@ tasks.withType(JavaExec) {
     jvmArgs "-javaagent:${configurations.quasar.iterator().next()}" // =v, =d
     jvmArgs '-server'
     jvmArgs '-Xmx1024m'
-//    jvmArgs "-ea"
+    //    jvmArgs "-ea"
     classpath = sourceSets.main.runtimeClasspath 
     args "server", "hello-world.yml"
     systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', 'true'
@@ -23,7 +23,6 @@ tasks.withType(JavaExec) {
 task(runSimple, dependsOn: 'classes', type: JavaExec) {
     main = 'com.example.helloworld.HelloWorldApplication'
     args "server", "hello-world.yml"
-//    systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', 'true'
 }
 
 defaultTasks 'runSimple'
