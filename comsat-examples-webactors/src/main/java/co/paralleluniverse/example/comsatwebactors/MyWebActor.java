@@ -5,7 +5,6 @@ import co.paralleluniverse.actors.ExitMessage;
 import co.paralleluniverse.actors.LifecycleMessage;
 import static co.paralleluniverse.comsat.webactors.Cookie.*;
 import co.paralleluniverse.comsat.webactors.HttpRequest;
-import co.paralleluniverse.comsat.webactors.HttpResponse;
 import static co.paralleluniverse.comsat.webactors.HttpResponse.*;
 import co.paralleluniverse.comsat.webactors.HttpStreamOpened;
 import co.paralleluniverse.comsat.webactors.SSE;
@@ -28,7 +27,7 @@ public class MyWebActor extends BasicActor<Object, Void> {
     static final Client httpClient = AsyncClientBuilder.newClient();
 
     private boolean initialized;
-    private List<SendPort<WebDataMessage>> listeners = new ArrayList<>();
+    private final List<SendPort<WebDataMessage>> listeners = new ArrayList<>();
     private int i;
     private DataSource ds;
 
