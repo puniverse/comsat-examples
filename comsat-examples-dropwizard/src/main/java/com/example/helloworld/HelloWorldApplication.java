@@ -1,8 +1,8 @@
 package com.example.helloworld;
 
 import co.paralleluniverse.fibers.dropwizard.FiberApplication;
-import co.paralleluniverse.fibers.dropwizard.FiberHttpClientBuilder;
 import co.paralleluniverse.fibers.dropwizard.FiberDBIFactory;
+import co.paralleluniverse.fibers.dropwizard.FiberHttpClientBuilder;
 import com.example.helloworld.resources.HelloWorldResource;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
