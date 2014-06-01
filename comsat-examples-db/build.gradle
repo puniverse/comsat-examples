@@ -3,12 +3,26 @@ configurations {
 }
 
 dependencies {
-    compile "co.paralleluniverse:comsat-jdbc:$comsatVersion"
-    compile "co.paralleluniverse:comsat-jdbi:$comsatVersion"
-    compile 'com.h2database:h2:1.4.178'
     compile "co.paralleluniverse:quasar-core:$quasarVersion"
     quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
+    compile "co.paralleluniverse:comsat-jdbi:$comsatVersion"
+    compile "co.paralleluniverse:comsat-jooq:$comsatVersion"
+    compile 'com.h2database:h2:1.4.178'
 }
+    classes {
+        doFirst{
+            println "Excuting scanSuspendables..."
+            //            println configurations.runtime.asPath
+            ant.taskdef(name:'scanSuspendables', 
+                classname:'co.paralleluniverse.fibers.instrument.SuspendablesScanner', 
+                classpath: "build/classes/main:${configurations.runtime.asPath}")
+            ant.scanSuspendables(outputFile:"$sourceSets.main.output.resourcesDir/META-INF/suspendable-supers",
+                suspendablesFile: "$sourceSets.main.output.resourcesDir/META-INF/suspendables"
+            ) {
+                fileset(dir: sourceSets.main.output.classesDir)
+            }
+        }
+    }
 
 tasks.withType(JavaExec) {
     main = mainClass

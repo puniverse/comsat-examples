@@ -7,20 +7,25 @@ import co.paralleluniverse.fibers.jdbc.FiberDataSource;
 import co.paralleluniverse.fibers.jdbi.FiberDBI;
 import co.paralleluniverse.strands.SuspendableRunnable;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcDataSource;
+import org.jooq.DSLContext;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.util.StringMapper;
+import org.jooq.Record;
+import org.jooq.RecordMapper;
+import static org.jooq.impl.DSL.*;
 
 public class DbExample {
-    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
+    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException, ClassNotFoundException {
         final JdbcDataSource ds = new JdbcDataSource();
         ds.setURL("jdbc:h2:./build/h2testdb");
         final DataSource fiberDataSource = new FiberDataSource(ds, 10);
@@ -34,7 +39,8 @@ public class DbExample {
             }
         }).start().join();
 
-        final FiberDBI jdbi = new FiberDBI(fiberDataSource, Executors.newFixedThreadPool(10,new ThreadFactoryBuilder().setDaemon(true).build()));
+        // JDBI example
+        final FiberDBI jdbi = new FiberDBI(fiberDataSource, Executors.newFixedThreadPool(10, new ThreadFactoryBuilder().setDaemon(true).build()));
         final MyDAO dao = jdbi.onDemand(MyDAO.class);
         new Fiber<Void>(new SuspendableRunnable() {
             @Override
@@ -51,12 +57,45 @@ public class DbExample {
                             .bind("id", 37)
                             .map(StringMapper.FIRST)
                             .first());
-                    System.out.println("dao name37: "+dao.findNameById(37));
+                    System.out.println("dao name37: " + dao.findNameById(37));
                     h.execute("drop table something");
                 }
             }
         }).start().join();
 
+        // jOOQ example        
+        new Fiber<Void>(new SuspendableRunnable() {
+            @Override
+            public void run() throws SuspendExecution, InterruptedException {
+                try (Connection conn = fiberDataSource.getConnection()) {
+                    conn.createStatement().execute("create table something (id int primary key, name varchar(100))");
+                    DSLContext ctx = using(conn);
+                    for (int i = 0; i < 100; i++)
+                        ctx.insertInto(table("something"), field("id"), field("name")).values(i, "Stranger" + i).execute();
+                    Something something = ctx.select(field("id"), field("name")).from(table("something")).where(field("id", Integer.class).eq(37)).fetchOne().map(Something.mapper);
+                    System.out.println("jooq name of id " + something.id + ": " + something.name);
+                    conn.createStatement().execute("drop table something");
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start().join();
+    }
+
+    public static class Something {
+        public final int id;
+        public final String name;
+        public static RecordMapper<Record, Something> mapper = new RecordMapper<Record, Something>() {
+            @Override
+            public Something map(Record r) {
+                return new Something(r.getValue(field("id", Integer.class)), r.getValue(field("name", String.class)));
+            }
+        };
+
+        public Something(int id, String name) {
+            this.id = id;
+            this.name = name;
+        }
     }
 
     @Suspendable
