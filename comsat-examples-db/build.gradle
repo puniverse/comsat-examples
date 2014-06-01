@@ -1,0 +1,25 @@
+configurations {
+    quasar
+}
+
+dependencies {
+    compile "co.paralleluniverse:comsat-jdbc:$comsatVersion"
+    compile "co.paralleluniverse:comsat-jdbi:$comsatVersion"
+    compile 'com.h2database:h2:1.4.178'
+    compile "co.paralleluniverse:quasar-core:$quasarVersion"
+    quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
+}
+
+tasks.withType(JavaExec) {
+    main = mainClass
+    jvmArgs "-javaagent:${configurations.quasar.iterator().next()}" // =v, =d
+    jvmArgs '-server'
+    classpath = sourceSets.main.runtimeClasspath 
+    systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', 'true'
+}
+
+task(runSimple, dependsOn: 'classes', type: JavaExec) {
+    main = 'com.example.helloworld.HelloWorldApplication'
+}
+
+defaultTasks 'runSimple'
