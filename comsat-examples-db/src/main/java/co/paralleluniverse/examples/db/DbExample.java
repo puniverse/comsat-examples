@@ -70,10 +70,16 @@ public class DbExample {
                 try (Connection conn = fiberDataSource.getConnection()) {
                     conn.createStatement().execute("create table something (id int primary key, name varchar(100))");
                     DSLContext ctx = using(conn);
-                    for (int i = 0; i < 100; i++)
+                    for (int i = 0; i < 100; i++) {
                         ctx.insertInto(table("something"), field("id"), field("name")).values(i, "Stranger" + i).execute();
-                    Something something = ctx.select(field("id"), field("name")).from(table("something")).where(field("id", Integer.class).eq(37)).fetchOne().map(Something.mapper);
-                    System.out.println("jooq name of id " + something.id + ": " + something.name);
+                        if (i % 10 == 0)
+                            System.out.println("jooq inserting record " + i);
+                    }
+                    for (int i = 0; i < 100; i++) {
+                        Something something = ctx.select(field("id"), field("name")).from(table("something")).where(field("id", Integer.class).eq(i)).fetchOne().map(Something.mapper);
+                        if (i % 10 == 0)
+                            System.out.println("jooq name of id " + something.id + ": " + something.name);
+                    }
                     conn.createStatement().execute("drop table something");
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
