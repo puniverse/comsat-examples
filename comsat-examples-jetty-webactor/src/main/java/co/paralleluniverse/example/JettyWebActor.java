@@ -160,7 +160,8 @@ public class JettyWebActor extends BasicActor<Object, Void> {
         staticCtx.setHandler(rh);
 
         ServletContextHandler webActorsContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        webActorsContext.addEventListener(new WebActorInitializer(ClassLoader.getSystemClassLoader()));
+        WebActorInitializer.setUserClassLoader(ClassLoader.getSystemClassLoader());
+        webActorsContext.addEventListener(new WebActorInitializer());
         webActorsContext.addServlet(new ServletHolder(new TestServlet()), "/test-servlet/test");
 
         final HandlerList handlers = new HandlerList();

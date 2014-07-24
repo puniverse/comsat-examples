@@ -62,6 +62,6 @@ public class SimpleFiberServlets {
         jdb.setCreateDatabase("create");
         jdb.getConnection().close();
         
-        return new FiberDataSource(jdb, 2);
+        return FiberDataSource.wrap(jdb, 2);
     }
 }

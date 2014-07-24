@@ -9,8 +9,9 @@ apply plugin: 'application'
 String mavenGroupId = 'co.paralleluniverse'
 String mavenVersion = '0.1-SNAPSHOT'
 
-ext.quasarVersion = '0.6.0-SNAPSHOT'
-ext.comsatVersion = '0.2.0-SNAPSHOT'
+ext.quasarVersion = '0.6.0'
+ext.comsatVersion = '0.2.0'
+ext.servletVersion = '3.0.1'
 
 if (!hasProperty('mainClass')) {
     ext.mainClass = ''
@@ -24,6 +25,10 @@ repositories {
     mavenCentral();
     maven { url "https://oss.sonatype.org/content/repositories/releases" }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
+
+dependencies {
+    runtime  "co.paralleluniverse:quasar-core:$quasarVersion"
 }
 
 tasks.withType(JavaExec) {

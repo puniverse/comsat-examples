@@ -16,8 +16,9 @@ dependencies {
             ant.taskdef(name:'scanSuspendables', 
                 classname:'co.paralleluniverse.fibers.instrument.SuspendablesScanner', 
                 classpath: "build/classes/main:${configurations.runtime.asPath}")
-            ant.scanSuspendables(outputFile:"$sourceSets.main.output.resourcesDir/META-INF/suspendable-supers",
-                suspendablesFile: "$sourceSets.main.output.resourcesDir/META-INF/suspendables"
+            ant.scanSuspendables(supersFile:"$sourceSets.main.output.resourcesDir/META-INF/suspendable-supers",
+                suspendablesFile: "$sourceSets.main.output.resourcesDir/META-INF/suspendables",
+                auto: false
             ) {
                 fileset(dir: sourceSets.main.output.classesDir)
             }

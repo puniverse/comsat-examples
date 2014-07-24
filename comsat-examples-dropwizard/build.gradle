@@ -6,6 +6,7 @@ dependencies {
     compile "co.paralleluniverse:comsat-dropwizard:$comsatVersion"
     runtime 'org.apache.derby:derby:10.10.1.1'    
     //    runtime 'mysql:mysql-connector-java:5.1.30'
+    compile  "co.paralleluniverse:quasar-core:$quasarVersion"
     quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
 }
 

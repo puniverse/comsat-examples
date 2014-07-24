@@ -28,7 +28,7 @@ public class DbExample {
     public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException, ClassNotFoundException {
         final JdbcDataSource ds = new JdbcDataSource();
         ds.setURL("jdbc:h2:./build/h2testdb");
-        final DataSource fiberDataSource = new FiberDataSource(ds, 10);
+        final DataSource fiberDataSource = FiberDataSource.wrap(ds, 10);
 
         new Fiber<Void>(new SuspendableRunnable() {
 
