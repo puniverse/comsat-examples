@@ -6,6 +6,7 @@ import co.paralleluniverse.fibers.dropwizard.FiberHttpClientBuilder;
 import com.example.helloworld.resources.HelloWorldResource;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import java.util.Arrays;
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.IDBI;
 

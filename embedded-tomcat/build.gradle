@@ -19,13 +19,13 @@ task deployToTomcat(type: Copy) {
     }
     
     // To run the WAR examples:
-    from project(":test-servlet").war
-    from project(":comsat-examples-servlet").war
-    from project(":comsat-examples-webactors").war
-    from project(":comsat-examples-jaxrs").war
+//    from project(":test-servlet").war
+//    from project(":comsat-examples-servlet").war
+//    from project(":comsat-examples-webactors").war
+//    from project(":comsat-examples-jaxrs").war
     
     // To run Spaceships:
-    // from project(":comsat-examples-spaceships").war
+     from project(":comsat-examples-spaceships").war
     
     from 'src/main/webapp'
     into webappDir

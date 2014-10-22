@@ -23,7 +23,7 @@ tasks.withType(JavaExec) {
 
 task(runSimple, dependsOn: 'classes', type: JavaExec) {
     main = 'com.example.helloworld.HelloWorldApplication'
-    args "server", "hello-world.yml"
+    // args "server", "hello-world.yml"
 }
 
 defaultTasks 'runSimple'
