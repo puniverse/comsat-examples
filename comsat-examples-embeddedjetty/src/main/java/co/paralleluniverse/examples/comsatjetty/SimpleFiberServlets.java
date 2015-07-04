@@ -4,6 +4,7 @@ import co.paralleluniverse.examples.comsatservlet.BlockingCallsExample;
 import co.paralleluniverse.examples.comsatservlet.MyFiberServlet;
 import co.paralleluniverse.examples.test.TestServlet;
 import co.paralleluniverse.fibers.SuspendExecution;
+import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.fibers.jdbc.FiberDataSource;
 import co.paralleluniverse.fibers.servlet.FiberHttpServlet;
 import co.paralleluniverse.fibers.ws.rs.client.AsyncClientBuilder;
@@ -31,19 +32,25 @@ public class SimpleFiberServlets {
 
         context.addServlet(new ServletHolder(new FiberHttpServlet() {
             @Override
-            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, SuspendExecution {
+            @Suspendable
+            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
                 try (PrintWriter out = resp.getWriter()) {
                     out.println(new Date() + ": welcome to " + MyFiberServlet.class.getSimpleName() + "\n");
-                    out.println(BlockingCallsExample.doSleep());
-                    out.println(BlockingCallsExample.callSomeRS(httpClient));
-                    out.println(BlockingCallsExample.executeSomeSql(jdb));
+                    try {
+                        out.println(BlockingCallsExample.doSleep());
+                        out.println(BlockingCallsExample.callSomeRS(httpClient));
+                        out.println(BlockingCallsExample.executeSomeSql(jdb));
+                    } catch (SuspendExecution suspendExecution) {
+                        new AssertionError(suspendExecution);
+                    }
                 }
             }
         }), "/myFiberServlet");
         context.addServlet(TestServlet.class, "/test-servlet/test");
         context.addServlet(new ServletHolder(new FiberHttpServlet() {
             @Override
-            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, SuspendExecution {
+            @Suspendable
+            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
                 // FiberServlet is allowed to forward the call
                 getServletConfig().getServletContext().getRequestDispatcher("/myFiberServlet").forward(req, resp);
             }

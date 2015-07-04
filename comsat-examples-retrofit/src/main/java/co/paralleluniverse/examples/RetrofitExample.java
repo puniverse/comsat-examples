@@ -3,7 +3,7 @@ package co.paralleluniverse.examples;
 import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.fibers.Suspendable;
-import co.paralleluniverse.fibers.retrofit.FiberRestAdaptherBuilder;
+import co.paralleluniverse.fibers.retrofit.FiberRestAdapterBuilder;
 import co.paralleluniverse.strands.SuspendableRunnable;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -14,7 +14,7 @@ import retrofit.http.Path;
 public class RetrofitExample {
     public static void main(String... args) throws ExecutionException, InterruptedException {
         // Create a very simple REST adapter which points the GitHub API endpoint.
-        RestAdapter restAdapter = new FiberRestAdaptherBuilder().setEndpoint("https://api.github.com").build();
+        RestAdapter restAdapter = new FiberRestAdapterBuilder().setEndpoint("https://api.github.com").build();
 
         // Create an instance of our GitHub API interface.
         final GitHub github = restAdapter.create(GitHub.class);
@@ -44,5 +44,4 @@ public class RetrofitExample {
         String login;
         int contributions;
     }
-
 }

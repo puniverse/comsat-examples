@@ -12,12 +12,12 @@ configurations {
 }
 
 dependencies {
-    proprietary "co.paralleluniverse:spacebase-core:2.3-SNAPSHOT"
-    proprietary "co.paralleluniverse:spacebase-core:2.3-SNAPSHOT:jdk8"
-    providedCompile "co.paralleluniverse:quasar-core:$quasarVersion"
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
-    compile "co.paralleluniverse:comsat-actors-servlet:$comsatVersion"
-    compile ":spacebase-core:2.3-SNAPSHOT" // :jdk8
+    proprietary "co.paralleluniverse:spacebase-core:$spaceBaseVer"
+    proprietary "co.paralleluniverse:spacebase-core:$spaceBaseVer:jdk8"
+    providedCompile "co.paralleluniverse:quasar-core:$quasarVer"
+    providedCompile "javax.servlet:javax.servlet-api:$servletVer"
+    compile "co.paralleluniverse:comsat-actors-servlet:$comsatVer"
+    compile ":spacebase-core:$spaceBaseVer" // :jdk8
     runtime "net.sf.trove4j:trove4j:3.0.2"
 } 
 

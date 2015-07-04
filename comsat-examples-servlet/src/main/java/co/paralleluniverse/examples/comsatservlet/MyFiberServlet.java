@@ -1,6 +1,7 @@
 package co.paralleluniverse.examples.comsatservlet;
 
 import co.paralleluniverse.fibers.SuspendExecution;
+import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.fibers.servlet.FiberHttpServlet;
 import co.paralleluniverse.fibers.ws.rs.client.AsyncClientBuilder;
 import java.io.IOException;
@@ -19,12 +20,17 @@ public class MyFiberServlet extends FiberHttpServlet {
     final static DataSource ds = BlockingCallsExample.lookupDataSourceJDBC();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, SuspendExecution {
+    @Suspendable
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try (PrintWriter out = resp.getWriter()) {
             out.println(new Date() + ": welcome to " + MyFiberServlet.class.getSimpleName() + "\n");
-            out.println(BlockingCallsExample.doSleep());
-            out.println(BlockingCallsExample.callSomeRS(httpClient));
-            out.println(BlockingCallsExample.executeSomeSql(ds));
+            try {
+                out.println(BlockingCallsExample.doSleep());
+                out.println(BlockingCallsExample.callSomeRS(httpClient));
+                out.println(BlockingCallsExample.executeSomeSql(ds));
+            } catch (SuspendExecution suspendExecution) {
+                throw new AssertionError(suspendExecution);
+            }
         }
     }
 }

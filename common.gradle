@@ -7,11 +7,21 @@ apply plugin: 'maven'
 apply plugin: 'application'
 
 String mavenGroupId = 'co.paralleluniverse'
-String mavenVersion = '0.1-SNAPSHOT'
+String mavenVersion = '0.2-SNAPSHOT'
 
-ext.quasarVersion = '0.6.0'
-ext.comsatVersion = '0.2.0'
-ext.servletVersion = '3.0.1'
+ext.quasarVer     = '0.7.2'
+ext.comsatVer     = '0.4.0'
+ext.metricsVer    = '3.1.2'
+ext.servletVer    = '3.1.0'
+ext.tomcatVer     = '8.0.23'
+ext.jettyVer      = '9.2.11.v20150529'
+ext.h2Ver         = '1.4.187'
+ext.derbyVer      = '10.11.1.1'
+ext.spaceBaseVer  = '2.3-SNAPSHOT'
+ext.slf4jVer      = '1.7.12'
+ext.jdbiVer       = '2.62'
+ext.httpCoreVer   = '4.4.1'
+ext.httpClientVer = '4.5'
 
 if (!hasProperty('mainClass')) {
     ext.mainClass = ''
@@ -28,7 +38,7 @@ repositories {
 }
 
 dependencies {
-    runtime  "co.paralleluniverse:quasar-core:$quasarVersion"
+    runtime  "co.paralleluniverse:quasar-core:$quasarVer"
 }
 
 tasks.withType(JavaExec) {
@@ -61,4 +71,3 @@ tasks.withType(JavaExec) {
     // systemProperty "co.paralleluniverse.flightRecorderDumpFile", "spaceships.log"
     // systemProperty "co.paralleluniverse.monitoring.flightRecorderSize","100000" 
 }
-

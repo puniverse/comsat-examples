@@ -3,9 +3,9 @@ configurations {
 }
 
 dependencies {
-    compile "co.paralleluniverse:comsat-retrofit:$comsatVersion"
-    compile "co.paralleluniverse:quasar-core:$quasarVersion"
-    quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
+    compile "co.paralleluniverse:comsat-retrofit:$comsatVer"
+    compile "co.paralleluniverse:quasar-core:$quasarVer"
+    quasar  "co.paralleluniverse:quasar-core:$quasarVer"
 }
 
 tasks.withType(JavaExec) {
@@ -17,7 +17,7 @@ tasks.withType(JavaExec) {
 }
 
 task(runSimple, dependsOn: 'classes', type: JavaExec) {
-    main = 'com.example.helloworld.HelloWorldApplication'
+    main = 'co.paralleluniverse.examples.RetrofitExample'
 }
 
 defaultTasks 'runSimple'

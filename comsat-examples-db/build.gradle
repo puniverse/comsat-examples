@@ -3,27 +3,28 @@ configurations {
 }
 
 dependencies {
-    compile "co.paralleluniverse:quasar-core:$quasarVersion"
-    quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
-    compile "co.paralleluniverse:comsat-jdbi:$comsatVersion"
-    compile "co.paralleluniverse:comsat-jooq:$comsatVersion"
-    compile 'com.h2database:h2:1.4.178'
+    compile "co.paralleluniverse:quasar-core:$quasarVer"
+    quasar  "co.paralleluniverse:quasar-core:$quasarVer"
+    compile "co.paralleluniverse:comsat-jdbi:$comsatVer"
+    compile "co.paralleluniverse:comsat-jooq:$comsatVer"
+    compile "com.h2database:h2:$h2Ver"
 }
-    classes {
-        doFirst{
-            println "Excuting scanSuspendables..."
-            //            println configurations.runtime.asPath
-            ant.taskdef(name:'scanSuspendables', 
-                classname:'co.paralleluniverse.fibers.instrument.SuspendablesScanner', 
-                classpath: "build/classes/main:${configurations.runtime.asPath}")
-            ant.scanSuspendables(supersFile:"$sourceSets.main.output.resourcesDir/META-INF/suspendable-supers",
-                suspendablesFile: "$sourceSets.main.output.resourcesDir/META-INF/suspendables",
-                auto: false
-            ) {
-                fileset(dir: sourceSets.main.output.classesDir)
-            }
+
+classes {
+    doFirst{
+        println "Excuting scanSuspendables..."
+        //            println configurations.runtime.asPath
+        ant.taskdef(name:'scanSuspendables',
+            classname:'co.paralleluniverse.fibers.instrument.SuspendablesScanner',
+            classpath: "build/classes/main:${configurations.runtime.asPath}")
+        ant.scanSuspendables(supersFile:"$sourceSets.main.output.resourcesDir/META-INF/suspendable-supers",
+            suspendablesFile: "$sourceSets.main.output.resourcesDir/META-INF/suspendables",
+            auto: false
+        ) {
+            fileset(dir: sourceSets.main.output.classesDir)
         }
     }
+}
 
 tasks.withType(JavaExec) {
     main = mainClass
@@ -34,7 +35,7 @@ tasks.withType(JavaExec) {
 }
 
 task(runSimple, dependsOn: 'classes', type: JavaExec) {
-    main = 'com.example.helloworld.HelloWorldApplication'
+    main = 'co.paralleluniverse.examples.db.DbExample'
 }
 
 defaultTasks 'runSimple'

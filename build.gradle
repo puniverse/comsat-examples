@@ -4,6 +4,22 @@ apply plugin: 'base' // To add "clean" task to the root project.
 
 subprojects {
     apply from: rootProject.file('common.gradle')
+
+    configurations.all {
+        resolutionStrategy {
+            failOnVersionConflict()
+
+            force "javax.servlet:javax.servlet-api:$servletVer"
+            force "org.eclipse.jetty:jetty-http:$jettyVer"
+            force "org.eclipse.jetty:jetty-util:$jettyVer"
+            force "org.eclipse.jetty:jetty-io:$jettyVer"
+            force "io.dropwizard.metrics:metrics-core:$metricsVer"
+            force "org.jdbi:jdbi:$jdbiVer"
+            force "org.slf4j:slf4j-api:$slf4jVer"
+            force "org.apache.httpcomponents:httpcore:$httpCoreVer"
+            force "org.apache.httpcomponents:httpclient:$httpClientVer"
+         }
+    }
 }
 
 task mergedJavadoc(type: Javadoc, description: 'Creates Javadoc from all the projects.') {
@@ -17,8 +33,4 @@ task mergedJavadoc(type: Javadoc, description: 'Creates Javadoc from all the pro
     classpath.from {
         subprojects*.configurations*.compile*.copyRecursive({ !(it instanceof ProjectDependency); })*.resolve()
     }
-}
-
-task wrapper(type: Wrapper, description: 'Creates and deploys the Gradle wrapper to the current directory.') {
-    gradleVersion = '1.11'
 }

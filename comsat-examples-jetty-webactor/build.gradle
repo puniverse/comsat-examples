@@ -3,20 +3,20 @@ configurations {
 }
 
 dependencies {
-    compile 'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.2.0.M1'
-    compile "co.paralleluniverse:quasar-core:$quasarVersion"
-    compile "co.paralleluniverse:comsat-actors-servlet:$comsatVersion"
-    compile "co.paralleluniverse:comsat-jax-rs-client:$comsatVersion"
-    quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
+    compile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVer"
+    compile "co.paralleluniverse:quasar-core:$quasarVer"
+    compile "co.paralleluniverse:comsat-actors-servlet:$comsatVer"
+    compile "co.paralleluniverse:comsat-jax-rs-client:$comsatVer"
+    quasar  "co.paralleluniverse:quasar-core:$quasarVer"
 
     compile project(':test-servlet')
     compile project(':comsat-examples-servlet')
     
-    quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
+    quasar  "co.paralleluniverse:quasar-core:$quasarVer"
 }
 
 run {
-    if (project.hasProperty('mainClass')) 
+    if (project.hasProperty('mainClass') && mainClass != '')
         main = mainClass
     else 
         main = 'co.paralleluniverse.example.JettyWebActor'        

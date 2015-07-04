@@ -3,28 +3,28 @@ configurations {
 }
 
 dependencies {
-    
+
 }
 
 dependencies {
-    compile "co.paralleluniverse:quasar-core:$quasarVersion"
-    compile "co.paralleluniverse:comsat-servlet:$comsatVersion"
-    compile "co.paralleluniverse:comsat-jdbc:$comsatVersion"    
-    compile 'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.1.3.v20140225'
-    compile 'org.apache.derby:derby:10.10.1.1'
+    compile "co.paralleluniverse:quasar-core:$quasarVer"
+    compile "co.paralleluniverse:comsat-servlet:$comsatVer"
+    compile "co.paralleluniverse:comsat-jdbc:$comsatVer"
+    compile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVer"
+    compile "org.apache.derby:derby:$derbyVer"
 
     compile project(':test-servlet')
     compile project(':comsat-examples-servlet')
     
-    quasar  "co.paralleluniverse:quasar-core:$quasarVersion"
+    quasar  "co.paralleluniverse:quasar-core:$quasarVer"
 }
 
 run {
-    if (project.hasProperty('mainClass')) 
+    if (project.hasProperty('mainClass') && mainClass != '')
         main = mainClass
-    else 
-        main = 'co.paralleluniverse.examples.comsatjetty.SimpleFiberServlets'        
-    standardInput = System.in    
+    else
+        main = 'co.paralleluniverse.examples.comsatjetty.SimpleFiberServlets'
+    standardInput = System.in
     jvmArgs "-javaagent:${configurations.quasar.iterator().next()}" // =v, =d
     jvmArgs "-ea"
     // systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', 'true'
