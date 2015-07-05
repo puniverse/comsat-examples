@@ -1,5 +1,4 @@
-apply plugin: 'war' 
-
+apply plugin: 'war'
 
 dependencies {
     providedCompile "co.paralleluniverse:quasar-core:$quasarVer"

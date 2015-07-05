@@ -17,13 +17,13 @@ task deployToTomcat(type: Copy) {
         delete(webappDir)
         webappDir.mkdirs()     
     }
-    
+
     // To run the WAR examples:
     from project(":test-servlet").war
     from project(":comsat-examples-servlet").war
     from project(":comsat-examples-webactors").war
     from project(":comsat-examples-jaxrs").war
-    
+
     // To run Spaceships:
     // from project(":comsat-examples-spaceships").war
     
@@ -37,7 +37,7 @@ run {
     classpath = sourceSets.main.runtimeClasspath
     if (project.hasProperty('service')) {args('service=true')}
     standardInput = System.in
-    
+
     // hot code swapping
     systemProperty "co.paralleluniverse.actors.moduleDir", "${rootProject.projectDir}/modules"
 
@@ -46,13 +46,13 @@ run {
     jvmArgs '-XX:+UseParallelGC'
     jvmArgs '-XX:+UseCondCardMark'
     // jvmArgs '-XX:+UseG1GC', '-XX:MaxGCPauseMillis=50'
-    
+
     // profiling
     // jvmArgs '-XX:+UnlockCommercialFeatures', '-XX:+FlightRecorder'
     // jvmArgs '-verbose:gc'
     // jvmArgs '-XX:+UnlockDiagnosticVMOptions', '-XX:+TraceClassLoading', '-XX:+LogCompilation' // use with jitwatch
     // jvmArgs '-XX:+UnlockDiagnosticVMOptions', '-XX:+PrintInlining'
-    
+
     // debugging
     jvmArgs '-ea'
     // systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', 'true'
