@@ -7,12 +7,18 @@ import com.example.helloworld.MyDAO;
 import com.example.helloworld.core.Saying;
 import com.google.common.base.Optional;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.sql.DataSource;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
@@ -24,21 +30,22 @@ import org.skife.jdbi.v2.util.StringMapper;
 @Path("/hello-world")
 @Produces(MediaType.APPLICATION_JSON)
 public class HelloWorldResource {
-    final String ALREADY_EXISTS_ERROR = "X0Y32";
     private final String template;
     private final String defaultName;
     private final AtomicLong counter;
     private final HttpClient httpClient;
     private final MyDAO dao;
     private final IDBI jdbi;
+    private final DataSource ds;
 
-    public HelloWorldResource(String template, String defaultName, HttpClient httpClient, IDBI jdbi, MyDAO dao) {
+    public HelloWorldResource(String template, String defaultName, HttpClient httpClient, IDBI jdbi, MyDAO dao, DataSource jdbcDB) {
         this.template = template;
         this.defaultName = defaultName;
         this.counter = new AtomicLong();
         this.httpClient = httpClient;
         this.dao = dao;
         this.jdbi = jdbi;
+        this.ds = jdbcDB;
     }
 
     @GET
@@ -111,5 +118,22 @@ public class HelloWorldResource {
     public String daoQuery(@QueryParam("id") Optional<Integer> id) throws InterruptedException, SuspendExecution {
         String first = dao.findNameById(id.or(1));
         return first != null ? first : null;
+    }
+
+    @GET
+    @Path("/db/jdbc")
+    @Timed
+    public String jdbcQuery(@QueryParam("id") Optional<Integer> id) throws InterruptedException, SuspendExecution, SQLException {
+        String res = null;
+        try (final Connection c = ds.getConnection()) {
+            try (final PreparedStatement ps = c.prepareStatement("select name from something where id = ?")) {
+                ps.setInt(1, id.or(1));
+                try (final ResultSet rs = ps.executeQuery()) {
+                    if (rs.next())
+                        res = rs.getString(1);
+                }
+            }
+        }
+        return res;
     }
 }
