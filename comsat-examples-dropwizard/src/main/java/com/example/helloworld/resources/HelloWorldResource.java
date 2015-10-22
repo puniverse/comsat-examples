@@ -98,7 +98,7 @@ public class HelloWorldResource {
     public String query(@QueryParam("id") Optional<Integer> id) throws InterruptedException, SuspendExecution {
         try (Handle h = jdbi.open()) {
             String first = h.createQuery("select name from something where id = :id")
-                    .bind("id", id)
+                    .bind("id", id.or(1))
                     .map(StringMapper.FIRST)
                     .first();
             return first != null ? first : null;
