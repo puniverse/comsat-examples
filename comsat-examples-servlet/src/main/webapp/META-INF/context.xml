@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<Context antiJARLocking="true" path="/websandbox">
-    <!--load the webApp with quasar class loader for insturmentation purposes-->
+<Context>
+    <!--load the webApp with quasar class loader for instrumentation purposes-->
     <Loader loaderClass="co.paralleluniverse.comsat.tomcat.QuasarWebAppClassLoader" />
     <Manager pathname=""/>    
     <!--link to the global db resource-->
