@@ -26,9 +26,10 @@ public class EmbeddedTomcat extends Tomcat {
             // block forever for service mode
             while (args.length > 0)
                 Thread.sleep(3600000);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
         System.out.println("Hit enter to exit...");
+        //noinspection ResultOfMethodCallIgnored
         System.in.read();
         tomcat.stop();
     }
