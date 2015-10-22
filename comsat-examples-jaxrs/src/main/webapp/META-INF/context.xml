@@ -2,7 +2,7 @@
 <Context>
     <!--load the webApp with quasar class loader for instrumentation purposes-->
     <Loader loaderClass="co.paralleluniverse.comsat.tomcat.QuasarWebAppClassLoader" />
-    <Manager pathname=""/>    
+    <Manager pathname=""/>
     <!--link to the global db resource-->
     <ResourceLink name="jdbc/tdb"
                   global="jdbc/gdb"
