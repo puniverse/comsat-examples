@@ -16,7 +16,7 @@ public class EmbeddedTomcat extends Tomcat {
             if (fileEntry.getName().endsWith(".war")) {
                 String war = fileEntry.getName().substring(0, fileEntry.getName().length() - ".war".length());
                 System.out.println("Loading WAR: " + war);
-                tomcat.addWebapp(war, fileEntry.getAbsolutePath());
+                tomcat.addWebapp("/" + war, fileEntry.getAbsolutePath());
             }
         }
         registerDB(tomcat);
