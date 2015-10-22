@@ -7,19 +7,19 @@ apply plugin: 'maven'
 apply plugin: 'application'
 
 String mavenGroupId = 'co.paralleluniverse'
-String mavenVersion = '0.2-SNAPSHOT'
+String mavenVersion = '0.3-SNAPSHOT'
 
-ext.quasarVer     = '0.7.2'
-ext.comsatVer     = '0.4.0'
+ext.quasarVer     = '0.7.3'
+ext.comsatVer     = '0.5.0'
 ext.metricsVer    = '3.1.2'
 ext.servletVer    = '3.1.0'
-ext.tomcatVer     = '8.0.23'
-ext.jettyVer      = '9.2.11.v20150529'
-ext.h2Ver         = '1.4.187'
+ext.tomcatVer     = '8.0.26'
+ext.jettyVer      = '9.2.13.v20150730'
+ext.h2Ver         = '1.4.188'
 ext.derbyVer      = '10.11.1.1'
 ext.spaceBaseVer  = '2.3-SNAPSHOT'
 ext.slf4jVer      = '1.7.12'
-ext.jdbiVer       = '2.62'
+ext.jdbiVer       = '2.63.1'
 ext.httpCoreVer   = '4.4.1'
 ext.httpClientVer = '4.5'
 
@@ -47,7 +47,7 @@ tasks.withType(JavaExec) {
     // systemProperty "co.paralleluniverse.fibers.DefaultFiberPool.parallelism", "4"
     systemProperty "co.paralleluniverse.fibers.DefaultFiberPool.monitor", "JMX" // "METRICS" // "NONE" //
     systemProperty "co.paralleluniverse.actors.moduleDir", "${rootProject.projectDir}/modules"
-    
+
     // memory
     jvmArgs '-Xmx1024m'
     jvmArgs '-XX:+UseParallelGC'
