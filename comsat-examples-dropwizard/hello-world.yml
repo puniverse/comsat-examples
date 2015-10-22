@@ -11,10 +11,10 @@ httpClient:
     maxConnections: 9999
 database:
     driverClass: 
-        co.paralleluniverse.fibers.jdbc.FiberDriver
+        org.apache.derby.jdbc.EmbeddedDriver
 
-    url:    
-        jdbc:fiber:derby:build/mydb;user=root;password=root;create=true
+    url:
+        jdbc:derby:build/mydb;user=root;password=root;create=true
 # for mysql use url such as this
 #        jdbc:fiber:mysql://localhost:3306/testjdbi?zeroDateTimeBehavior=convertToNull
 
