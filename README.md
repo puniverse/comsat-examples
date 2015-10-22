@@ -65,10 +65,16 @@ You will now see the new actor behave differently in the test web page.
 
 ## Running Spaceships
 
-Uncomment the following line in `embedded-tomcat/build.gradle`:
+Stop the server if running and uncomment the following line in `embedded-tomcat/build.gradle`:
 
 ```
 from project(":comsat-examples-spaceships").war
+```
+
+Restart the server with:
+
+```sh
+gradle :embedded-tomcat:run
 ```
 
 Then, open [http://localhost:8080/comsat-examples-spaceships/login](http://localhost:8080/comsat-examples-spaceships/login) in your browser.
