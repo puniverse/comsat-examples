@@ -2,7 +2,7 @@ apply plugin: 'war'
 
 dependencies {
     providedCompile "co.paralleluniverse:quasar-core:$quasarVer"
-    compile "javax.servlet:javax.servlet-api:$servletVer"
+    providedCompile "javax.servlet:javax.servlet-api:$servletVer"
     compile "co.paralleluniverse:comsat-servlet:$comsatVer"
     compile "co.paralleluniverse:comsat-jax-rs-client:$comsatVer"
     runtime "co.paralleluniverse:comsat-jdbc:$comsatVer"
